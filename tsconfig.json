@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist/",
+    "noImplicitAny": true,
+    "module": "ESNext",
+    "target": "es5",
+    "jsx": "react-jsx", //чтобы не импортировать react каждый раз
+    "allowJs": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true, // если хотим импортировать все по дефолту, то не обязательно будет ставить * as
+    "esModuleInterop": true, //с пакетам commonJS можно работать как с обычными
+    "strictNullChecks": true,
+    "plugins": [{ "name": "typescript-plugin-css-modules" }],
+
+    //ALIAS
+    "baseUrl": ".", //путь до базовой директории
+    "paths": {
+      "@/*": ["./src/*"] //все участки по этому пути заменяем на src
+    }
+  },
+  //для ts-node мы переопределяем compiller options
+  "ts-node": {
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
+  }
+}

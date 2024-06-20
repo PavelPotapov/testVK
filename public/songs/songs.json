@@ -1,0 +1,20 @@
+{
+  "songs": [
+    {
+      "id": 1,
+      "title": "Test Song",
+      "artist": "Test Artist",
+      "coverImage": "/images/test.png",
+      "lyrics": "Sample lyrics of the song...",
+      "audioFile": "/audio/test.mp3"
+    },
+    {
+      "id": 2,
+      "title": "Another Song",
+      "artist": "Another Artist",
+      "coverImage": "/audio/test.png",
+      "lyrics": "Another sample lyrics...",
+      "audioFile": "/audio/test2.mp3"
+    }
+  ]
+}
