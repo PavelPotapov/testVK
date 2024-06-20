@@ -1,4 +1,5 @@
 import AudioPlayer from '@/widgets/audioPlayer/AudioPlayer'
+import SongList from '@/widgets/songLists/SongLists'
 import {
   AppRoot,
   SplitLayout,
@@ -24,6 +25,7 @@ export const App = () => {
             <Panel id="main">
               <PanelHeader>VKUI</PanelHeader>
               <AudioPlayer />
+              <SongList />
             </Panel>
           </View>
         </SplitCol>

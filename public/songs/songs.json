@@ -1,7 +1,7 @@
 {
   "songs": [
     {
-      "id": 1,
+      "id": "1",
       "title": "Test Song",
       "artist": "Test Artist",
       "coverImage": "/images/test.png",
@@ -9,10 +9,10 @@
       "audioFile": "/audio/test.mp3"
     },
     {
-      "id": 2,
+      "id": "2",
       "title": "Another Song",
       "artist": "Another Artist",
-      "coverImage": "/audio/test.png",
+      "coverImage": "/images/test2.png",
       "lyrics": "Another sample lyrics...",
       "audioFile": "/audio/test2.mp3"
     }
