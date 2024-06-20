@@ -6,7 +6,8 @@
       "artist": "Test Artist",
       "coverImage": "/images/test.png",
       "lyrics": "Sample lyrics of the song...",
-      "audioFile": "/audio/test.mp3"
+      "audioFileUrl": "/audio/test.mp3",
+      "duration": 35
     },
     {
       "id": "2",
@@ -14,7 +15,8 @@
       "artist": "Another Artist",
       "coverImage": "/images/test2.png",
       "lyrics": "Another sample lyrics...",
-      "audioFile": "/audio/test2.mp3"
+      "audioFileUrl": "/audio/test2.mp3",
+      "duration": 55
     }
   ]
 }

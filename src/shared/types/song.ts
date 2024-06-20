@@ -1,10 +1,11 @@
 export interface Song {
-  id: number
+  id: string
   title: string
   artist: string
   coverImage: string
   lyrics: string
-  audioFile: string
-  isAudioLoaded?: boolean 
+  audioFileUrl: string
+  duration: number
   isImageLoaded?: boolean
+  isAudioLoaded?: boolean
 }

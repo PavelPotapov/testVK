@@ -12,9 +12,9 @@ class AudioStore {
   artist: string = '' // Исполнитель текущей песни
   coverImage: string = '' // URL обложки текущей песни
   lyrics: string = '' // Текст песни
-  audioFile: string = '' // URL аудиофайла текущей песни
+  audioFileUrl: string = '' // URL аудиофайла текущей песни
   songs: Song[] = [] // Массив всех песен
-  isLoading: boolean = false // Флаг загрузки данных
+  isLoading: boolean = false // Флаг загрузки данных по списку аудиозаписей
   currentSong: Song | null = null // Текущая выбранная песня
 
   constructor() {
@@ -45,14 +45,14 @@ class AudioStore {
   }
 
   // Устанавливаем детали выбранной песни и загружаем изображение и аудио
-  async setSongDetails({ title, artist, coverImage, lyrics, audioFile }: Song) {
+  async setSongDetails({ title, artist, coverImage, lyrics, audioFileUrl }: Song) {
     this.songTitle = title
     this.artist = artist
     this.coverImage = coverImage
     this.lyrics = lyrics
-    this.audioFile = audioFile
+    this.audioFileUrl = audioFileUrl
 
-    const song = this.songs.find(song => song.audioFile === audioFile) // Находим текущую песню в списке
+    const song = this.songs.find(song => song.audioFileUrl === audioFileUrl) // Находим текущую песню в списке
     if (song) {
       this.currentSong = song // Устанавливаем текущую песню
     }
@@ -62,7 +62,7 @@ class AudioStore {
       await this.loadImage(coverImage) // Если нет, загружаем изображение
     }
     if (!song?.isAudioLoaded) {
-      await this.loadAudio(audioFile) // Если нет, загружаем аудио
+      await this.loadAudio(audioFileUrl) // Если нет, загружаем аудио
     }
   }
 
@@ -89,7 +89,7 @@ class AudioStore {
     try {
       const audio = new Audio() // Создаем новый элемент Audio
       audio.onloadedmetadata = () => {
-        const song = this.songs.find(song => song.audioFile === audioUrl) // Находим песню по URL аудиофайла
+        const song = this.songs.find(song => song.audioFileUrl === audioUrl) // Находим песню по URL аудиофайла
         if (song) {
           song.isAudioLoaded = true // Устанавливаем флаг загрузки аудио
         }
@@ -110,8 +110,8 @@ class AudioStore {
         if (this.audio) {
           this.audio.pause() // Приостанавливаем текущее аудио
           this.audio.currentTime = 0 // Сбрасываем текущее время воспроизведения
-          this.audio.src = this.audioFile // Устанавливаем новый URL аудиофайла
-          this.audio.load() // Загружаем новый аудиофайл
+          this.audio.src = this.audioFileUrl // Устанавливаем новый URL аудиофайла
+          // this.audio.load() // Загружаем новый аудиофайл
           this.audio.play() // Запускаем воспроизведение новой песни
         }
         this.isPlaying = true // Устанавливаем состояние проигрывания в true (play)
@@ -154,6 +154,20 @@ class AudioStore {
   setCurrentTime(time: number) {
     if (this.audio) {
       this.audio.currentTime = time // Устанавливаем текущее время воспроизведения аудио
+    }
+  }
+
+  isCurrentSong(song: Song) {
+    return this.currentSong?.id === song.id
+  }
+
+  // Метод для удаления аудио элемента из хранилища
+  removeAudio() {
+    if (this.audio) {
+      // Удаляем все привязанные события
+      this.audio.removeEventListener('timeupdate', this.updateTime)
+      this.audio.removeEventListener('loadedmetadata', this.updateDuration)
+      this.audio = null // Очищаем ссылку на элемент аудио
     }
   }
 
