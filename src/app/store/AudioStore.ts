@@ -125,7 +125,7 @@ class AudioStore {
   }
 
   // Включаем или выключаем проигрывание
-  playPause() {
+  togglePlaying() {
     if (this.audio) {
       if (this.isPlaying) {
         this.audio.pause() // Приостанавливаем аудио, если оно играет

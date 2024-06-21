@@ -2,10 +2,10 @@
   "songs": [
     {
       "id": "1",
-      "title": "Test Song",
-      "artist": "Test Artist",
+      "title": "Фильтр",
+      "artist": "ATL",
       "coverImage": "/images/test.png",
-      "lyrics": "Sample lyrics of the song...",
+      "lyrics": "Моторчик...",
       "audioFileUrl": "/audio/test.mp3",
       "duration": 35
     },
@@ -13,7 +13,7 @@
       "id": "2",
       "title": "Another Song",
       "artist": "Another Artist",
-      "coverImage": "/images/test2.png",
+      "coverImage": "/images/profile.jpg",
       "lyrics": "Another sample lyrics...",
       "audioFileUrl": "/audio/test2.mp3",
       "duration": 55

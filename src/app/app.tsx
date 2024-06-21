@@ -1,5 +1,5 @@
 import AudioPlayer from '@/widgets/audioPlayer/AudioPlayer'
-import SongList from '@/widgets/songLists/SongLists'
+import SongList from '@/widgets/songLists/ui/SongLists'
 import {
   AppRoot,
   SplitLayout,
@@ -13,6 +13,7 @@ import {
   usePlatform
 } from '@vkontakte/vkui'
 import '@vkontakte/vkui/dist/vkui.css'
+import './styles'
 
 export const App = () => {
   const platform = usePlatform()
