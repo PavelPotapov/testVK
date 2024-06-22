@@ -5,17 +5,17 @@ import { Slider } from '@vkontakte/vkui' // Подставьте коррект�
 import { roundRect } from '../lib/canvas'
 
 const AudioPlayer: React.FC = observer(() => {
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const canvasRef = useRef<HTMLCanvasElement | null>(null) // Создаем реф для canvas
-  const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null) // Реф на контекст canvas
+  const [volume, setVolume] = useState(100)
   const [isDragging, setIsDragging] = useState(false)
+  const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
   const animationFrameRef = useRef<number | null>(null)
-  const [volume, setVolume] = useState(100) // Состояние для уровня громкости
 
-  //Mount
+ 
   useEffect(() => {
     audioRef.current = new Audio()
     audioRef.current.addEventListener('loadedmetadata', setupVisualizer)
@@ -35,7 +35,6 @@ const AudioPlayer: React.FC = observer(() => {
     }
   }, [audioStore.audioFileUrl])
 
-  //Чистка аудиоконтекста
   const cleanupAudioContext = () => {
     if (audioContextRef.current) {
       audioContextRef.current.close().catch(error => {
@@ -49,9 +48,7 @@ const AudioPlayer: React.FC = observer(() => {
     }
   }
 
-  //Функция чистки canvas поля (при переключении треков)
   const clearCanvas = () => {
-    console.log('Произошла смена canvas')
     const canvasCtx = canvasCtxRef.current
     if (canvasCtx) {
       const canvas = canvasCtx.canvas
@@ -61,7 +58,7 @@ const AudioPlayer: React.FC = observer(() => {
 
   useEffect(() => {
     console.log('$$$$$$$$$$$$$$')
-    console.log(audioStore.isPlaying, audioStore.audioFileUrl, audioStore.audio, audioStore.canvas)
+    //console.log(audioStore.isPlaying, audioStore.audioFileUrl, audioStore.audio, audioStore.canvas)
   }, [audioStore.isPlaying])
 
   const setupVisualizer = () => {
@@ -75,7 +72,6 @@ const AudioPlayer: React.FC = observer(() => {
           analyserRef.current.fftSize = 512
           sourceRef.current.connect(analyserRef.current)
           analyserRef.current.connect(audioContextRef.current.destination)
-
           const canvas = canvasRef.current
           const canvasCtx = canvas?.getContext('2d')
           if (canvasCtx && canvas) {
@@ -91,16 +87,10 @@ const AudioPlayer: React.FC = observer(() => {
 
             const draw = () => {
               animationFrameRef.current = requestAnimationFrame(draw)
-
               analyserRef.current!.getByteFrequencyData(dataArray)
 
               // Очищаем канвас
               canvasCtxRef.current!.clearRect(0, 0, WIDTH, HEIGHT)
-
-              // Очищаем канвас только при изменении состояния паузы
-              if (audioStore.isPlaying) {
-                canvasCtxRef.current!.clearRect(0, 0, WIDTH, HEIGHT)
-              }
 
               // Отключаем антиалиасинг
               canvasCtxRef.current!.imageSmoothingEnabled = false
@@ -153,6 +143,7 @@ const AudioPlayer: React.FC = observer(() => {
         console.error(e)
       }
     }
+    //При переключении между треками нужно чистить canvas предыдущего играющего трека.
     clearCanvas()
     // Обновляем canvas и контекст
     canvasRef.current = audioStore.canvas
@@ -194,7 +185,7 @@ const AudioPlayer: React.FC = observer(() => {
   const handleVolumeChange = (value: number) => {
     setVolume(value)
     if (audioRef.current) {
-      audioRef.current.volume = value / 100 // Обновляем уровень громкости при изменении слайдера
+      audioRef.current.volume = value / 100
     }
   }
 
