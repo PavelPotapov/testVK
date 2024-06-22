@@ -7,22 +7,34 @@ const AudioPlayer: React.FC = observer(() => {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const audioContextRef = useRef<AudioContext | null>(null)
 
   useEffect(() => {
     if (audioRef.current) {
       audioStore.setAudio(audioRef.current)
-      setupVisualizer()
     }
 
     return () => {
       audioStore.removeAudio()
+      if (audioContextRef.current) {
+        audioContextRef.current.close()
+      }
     }
   }, [])
+
+  useEffect(() => {
+    // Обновление аудио, если меняется текущая песня в AudioStore
+    if (audioRef.current && audioStore.audioFileUrl) {
+      changeAudioSource(audioStore.audioFileUrl)
+    }
+  }, [audioStore.audioFileUrl])
 
   const setupVisualizer = () => {
     if (audioRef.current && canvasRef.current) {
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext
-      const audioContext = new AudioContext()
+      audioContextRef.current = new AudioContext()
+      const audioContext = audioContextRef.current
+
       const source = audioContext.createMediaElementSource(audioRef.current)
       const analyser = audioContext.createAnalyser()
 
@@ -95,6 +107,20 @@ const AudioPlayer: React.FC = observer(() => {
     }
 
     setIsDragging(false)
+  }
+
+  const changeAudioSource = (newSrc: string) => {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.src = newSrc
+      audioRef.current.load()
+
+      if (audioContextRef.current) {
+        audioContextRef.current.close()
+      }
+
+      setupVisualizer()
+    }
   }
 
   return (
