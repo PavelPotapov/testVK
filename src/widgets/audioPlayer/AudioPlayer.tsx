@@ -10,15 +10,20 @@ const AudioPlayer: React.FC = observer(() => {
   const audioContextRef = useRef<AudioContext | null>(null)
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
+  const animationFrameRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    audioRef.current = new Audio()
+    audioRef.current.addEventListener('loadedmetadata', setupVisualizer)
+
+    return () => {
+      cleanupAudioContext()
+    }
+  }, [])
 
   useEffect(() => {
     if (audioRef.current) {
       audioStore.setAudio(audioRef.current)
-    }
-
-    return () => {
-      audioStore.removeAudio()
-      cleanupAudioContext()
     }
   }, [])
 
@@ -36,61 +41,78 @@ const AudioPlayer: React.FC = observer(() => {
       audioContextRef.current = null
       sourceRef.current = null
       analyserRef.current = null
+      cancelAnimationFrame(animationFrameRef.current!)
+      animationFrameRef.current = null
     }
   }
 
   const setupVisualizer = () => {
     try {
       if (audioRef.current && canvasRef.current) {
-        const AudioContext = window.AudioContext || (window as any).webkitAudioContext
-        audioContextRef.current = new AudioContext()
-        const audioContext = audioContextRef.current
+        if (!audioContextRef.current) {
+          audioContextRef.current = new AudioContext()
+          sourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current)
+          analyserRef.current = audioContextRef.current.createAnalyser()
+          analyserRef.current.fftSize = 512
+          sourceRef.current.connect(analyserRef.current)
+          analyserRef.current.connect(audioContextRef.current.destination)
 
-        sourceRef.current = audioContext.createMediaElementSource(audioRef.current)
-        analyserRef.current = audioContext.createAnalyser()
+          const canvas = canvasRef.current
+          const canvasCtx = canvas.getContext('2d')
+          if (canvasCtx) {
+            const WIDTH = canvas.width
+            const HEIGHT = canvas.height
+            const bufferLength = analyserRef.current.frequencyBinCount
+            const dataArray = new Uint8Array(bufferLength)
 
-        sourceRef.current.connect(analyserRef.current)
-        analyserRef.current.connect(audioContext.destination)
+            const draw = () => {
+              animationFrameRef.current = requestAnimationFrame(draw)
 
-        analyserRef.current.fftSize = 256
-        const bufferLength = analyserRef.current.frequencyBinCount
-        const dataArray = new Uint8Array(bufferLength)
+              analyserRef.current!.getByteFrequencyData(dataArray)
 
-        const canvas = canvasRef.current
-        const canvasCtx = canvas.getContext('2d')
-        if (!canvasCtx) {
-          console.error('Failed to get canvas context')
-          return
-        }
+              canvasCtx.fillStyle = 'rgb(0, 0, 0)'
+              canvasCtx.fillRect(0, 0, WIDTH, HEIGHT)
 
-        const WIDTH = canvas.width
-        const HEIGHT = canvas.height
+              console.debug(bufferLength)
 
-        const draw = () => {
-          requestAnimationFrame(draw)
+              const barWidth = WIDTH / 5 // Ширина каждого столбца
 
-          if (analyserRef.current) analyserRef.current.getByteFrequencyData(dataArray)
+              for (let i = 0; i < 5; i++) {
+                const startIndex = Math.floor((bufferLength / 5) * i)
+                const endIndex = Math.floor((bufferLength / 5) * (i + 1))
 
-          canvasCtx.clearRect(0, 0, WIDTH, HEIGHT)
+                // Находим среднее значение амплитуды в каждой группе
+                let sum = 0
+                for (let j = startIndex; j < endIndex; j++) {
+                  sum += dataArray[j]
+                }
+                const average = sum / (endIndex - startIndex)
+                const barHeight = average / 2 // Нормализуем высоту столбца
 
-          const barWidth = (WIDTH / bufferLength) * 2.5
-          let barHeight
-          let x = 0
+                canvasCtx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`
+                canvasCtx.fillRect(i * barWidth, HEIGHT - barHeight / 2, barWidth, barHeight)
+              }
+            }
 
-          for (let i = 0; i < bufferLength; i++) {
-            barHeight = dataArray[i] / 2
-
-            canvasCtx.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)'
-            canvasCtx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight)
-
-            x += barWidth + 1
+            draw()
           }
         }
-
-        draw()
       }
     } catch (e) {
-      console.error(e, '!!!')
+      console.error(e)
+    }
+  }
+
+  const changeAudioSource = (newSrc: string) => {
+    if (audioRef.current) {
+      try {
+        audioRef.current.pause()
+        audioRef.current.src = newSrc
+        audioRef.current.load()
+        audioRef.current.play().catch(error => {
+          console.error('Failed to play audio:', error)
+        })
+      } catch (e) {}
     }
   }
 
@@ -123,19 +145,9 @@ const AudioPlayer: React.FC = observer(() => {
     setIsDragging(false)
   }
 
-  const changeAudioSource = (newSrc: string) => {
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current.src = newSrc
-      audioRef.current.load()
-
-      setupVisualizer()
-    }
-  }
-
   return (
     <div>
-      <canvas ref={canvasRef} width="600" height="100"></canvas>
+      <canvas ref={canvasRef} width="16" height="16"></canvas>
       <audio ref={audioRef} />
       {audioStore.currentSong && (
         <>

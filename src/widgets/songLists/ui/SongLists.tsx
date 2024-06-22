@@ -4,6 +4,7 @@ import { List, Cell, Tappable } from '@vkontakte/vkui'
 import audioStore from '@/app/store/AudioStore'
 import { Song } from '@/shared/types/song'
 import { TrackItem } from '@/entities/TrackItem'
+import AudioPlayer from '@/widgets/audioPlayer/AudioPlayer'
 
 const SongList: React.FC = observer(() => {
   useEffect(() => {
@@ -23,17 +24,20 @@ const SongList: React.FC = observer(() => {
   }
 
   return (
-    <List>
-      {audioStore.songs.map(song => (
-        <TrackItem
-          key={song.id}
-          track={song}
-          isCurrent={audioStore.isCurrentSong(song)}
-          onTrackClick={handleSongClick}
-          currentTime={audioStore.currentTime}
-        />
-      ))}
-    </List>
+    <div>
+      <List>
+        {audioStore.songs.map(song => (
+          <TrackItem
+            key={song.id}
+            track={song}
+            isCurrent={audioStore.isCurrentSong(song)}
+            onTrackClick={handleSongClick}
+            currentTime={audioStore.currentTime}
+          />
+        ))}
+      </List>
+      <AudioPlayer />
+    </div>
   )
 })
 

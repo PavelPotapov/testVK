@@ -15,6 +15,7 @@ class AudioStore {
   songs: Song[] = []
   isLoading: boolean = false
   currentSong: Song | null = null
+  canvas: HTMLCanvasElement | null = null
 
   constructor() {
     makeAutoObservable(this)
@@ -41,6 +42,10 @@ class AudioStore {
     this._bindEvents()
   }
 
+  setCanvas(canvas: HTMLCanvasElement) {
+    this.canvas = canvas
+  }
+
   async setSongDetails({ title, artist, coverImage, lyrics, audioFileUrl }: Song) {
     this.songTitle = title
     this.artist = artist
@@ -52,46 +57,6 @@ class AudioStore {
     if (song) {
       this.currentSong = song
     }
-
-    if (!song?.isImageLoaded) {
-      await this.loadImage(coverImage)
-    }
-    if (!song?.isAudioLoaded) {
-      await this.loadAudio(audioFileUrl)
-    }
-  }
-
-  async loadImage(imageUrl: string) {
-    if (!imageUrl) return
-    try {
-      const image = new Image()
-      image.onload = () => {
-        const song = this.songs.find(song => song.coverImage === imageUrl)
-        if (song) {
-          song.isImageLoaded = true
-        }
-      }
-      image.src = imageUrl
-    } catch (error) {
-      console.error('Error loading image:', error)
-    }
-  }
-
-  async loadAudio(audioUrl: string) {
-    if (!audioUrl) return
-    try {
-      const audio = new Audio()
-      audio.onloadedmetadata = () => {
-        const song = this.songs.find(song => song.audioFileUrl === audioUrl)
-        if (song) {
-          song.isAudioLoaded = true
-        }
-      }
-      audio.src = audioUrl
-      audio.load()
-    } catch (error) {
-      console.error('Error loading audio:', error)
-    }
   }
 
   selectSong(song: Song) {
@@ -99,10 +64,8 @@ class AudioStore {
     this.setSongDetails(song)
       .then(() => {
         if (this.audio) {
-          this.audio.pause()
           this.audio.currentTime = 0
           this.audio.src = this.audioFileUrl
-          this.audio.play()
         }
         this.isPlaying = true
       })

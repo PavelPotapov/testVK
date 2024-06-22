@@ -4,6 +4,7 @@ import { Card, Div, Text, Tappable, Image } from '@vkontakte/vkui' // Импор
 import { Song } from '@/shared/types/song' // Импорт типа трека из общих типов
 import { formatSecondsToTime } from '@/shared/lib'
 import styles from './TrackItem.module.scss'
+import audioStore from '@/app/store/AudioStore'
 
 interface TrackItemProps {
   track: Song

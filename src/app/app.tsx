@@ -1,4 +1,3 @@
-import AudioPlayer from '@/widgets/audioPlayer/AudioPlayer'
 import SongList from '@/widgets/songLists/ui/SongLists'
 import {
   AppRoot,
@@ -25,7 +24,7 @@ export const App = () => {
           <View activePanel="main">
             <Panel id="main">
               <PanelHeader>VKUI</PanelHeader>
-              <AudioPlayer />
+             
               <SongList />
             </Panel>
           </View>
