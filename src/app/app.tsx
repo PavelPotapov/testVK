@@ -13,6 +13,7 @@ import {
 } from '@vkontakte/vkui'
 import '@vkontakte/vkui/dist/vkui.css'
 import './styles'
+import AudioPlayer from '@/widgets/audioPlayer/ui/AudioPlayer'
 
 export const App = () => {
   const platform = usePlatform()
@@ -25,6 +26,7 @@ export const App = () => {
             <Panel id="main">
               <PanelHeader>VKUI</PanelHeader>
               <SongList />
+              <AudioPlayer />
             </Panel>
           </View>
         </SplitCol>

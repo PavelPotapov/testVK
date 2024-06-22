@@ -4,7 +4,6 @@ import { List, Cell, Tappable } from '@vkontakte/vkui'
 import audioStore from '@/app/store/AudioStore'
 import { Song } from '@/shared/types/song'
 import { TrackItem } from '@/entities/TrackItem'
-import AudioPlayer from '@/widgets/audioPlayer/AudioPlayer'
 
 const SongList: React.FC = observer(() => {
   useEffect(() => {
@@ -37,7 +36,7 @@ const SongList: React.FC = observer(() => {
           />
         ))}
       </List>
-      <AudioPlayer />
+      
     </div>
   )
 })

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { observer } from 'mobx-react-lite'
 import audioStore from '@/app/store/AudioStore'
 import { Slider } from '@vkontakte/vkui' // Подставьте корректные импорты из вашего UI-фреймворка
+import { roundRect } from '../lib/canvas'
 
 const AudioPlayer: React.FC = observer(() => {
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -16,21 +17,16 @@ const AudioPlayer: React.FC = observer(() => {
   useEffect(() => {
     audioRef.current = new Audio()
     audioRef.current.addEventListener('loadedmetadata', setupVisualizer)
-
+    if (audioRef.current) {
+      audioStore.setAudio(audioRef.current)
+    }
     return () => {
       cleanupAudioContext()
     }
   }, [])
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioStore.setAudio(audioRef.current)
-    }
-  }, [])
-
-  useEffect(() => {
     if (audioRef.current && audioStore.audioFileUrl) {
-      console.debug('!!!! поменяли url audio')
       changeAudioSource(audioStore.audioFileUrl)
     }
   }, [audioStore.audioFileUrl])
@@ -49,11 +45,9 @@ const AudioPlayer: React.FC = observer(() => {
   }
 
   const setupVisualizer = () => {
-    canvasRef.current = audioStore.canvas
-    console.debug('Новый канвас', canvasRef.current)
     try {
       if (audioRef.current && audioStore.canvas) {
-        // Используем canvas из стора
+        canvasRef.current = audioStore.canvas
         if (!audioContextRef.current) {
           audioContextRef.current = new AudioContext()
           sourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current)
@@ -71,6 +65,10 @@ const AudioPlayer: React.FC = observer(() => {
             const bufferLength = analyserRef.current.frequencyBinCount
             const dataArray = new Uint8Array(bufferLength)
 
+            const gap = 2 // Отступ между столбиками
+            const barWidth = (WIDTH - gap * 4) / 5 // Ширина каждого столбца с учетом отступов
+            const borderRadius = 10 // Радиус скругления углов
+
             const draw = () => {
               animationFrameRef.current = requestAnimationFrame(draw)
 
@@ -79,10 +77,15 @@ const AudioPlayer: React.FC = observer(() => {
               // Очищаем канвас
               canvasCtxRef.current!.clearRect(0, 0, WIDTH, HEIGHT)
 
+              // Очищаем канвас только при изменении состояния паузы
+              if (audioStore.isPlaying) {
+                canvasCtxRef.current!.clearRect(0, 0, WIDTH, HEIGHT)
+              }
+
               // Отключаем антиалиасинг
               canvasCtxRef.current!.imageSmoothingEnabled = false
 
-              const barWidth = WIDTH / 5 // Ширина каждого столбца
+              const barHeightScale = HEIGHT / 255 // Масштаб высоты столбиков по максимальному значению
 
               for (let i = 0; i < 5; i++) {
                 const startIndex = Math.floor((bufferLength / 5) * i)
@@ -94,15 +97,17 @@ const AudioPlayer: React.FC = observer(() => {
                   sum += dataArray[j]
                 }
                 const average = sum / (endIndex - startIndex)
-                const barHeight = (average / 255) * HEIGHT // Нормализуем высоту столбца
+                const barHeight = average * barHeightScale // Нормализуем высоту столбика
 
-                // Рисуем столбик
-                canvasCtxRef.current!.fillStyle = `rgb(${barHeight + 100}, 50, 50)`
-                canvasCtxRef.current!.fillRect(
-                  Math.floor(i * barWidth), // Целочисленные координаты
-                  Math.floor(HEIGHT - barHeight / 2), // Целочисленные координаты
-                  Math.ceil(barWidth), // Целочисленные размеры
-                  Math.ceil(barHeight) // Целочисленные размеры
+                // Рисуем скругленный столбик
+                canvasCtxRef.current!.fillStyle = `rgb(255, 255, 255)`
+                roundRect(
+                  canvasCtxRef.current!,
+                  i * (barWidth + gap) + gap / 2, // x1
+                  HEIGHT - barHeight, // y1
+                  i * (barWidth + gap) + gap / 2 + barWidth, // x2
+                  HEIGHT, // y2
+                  borderRadius // radius
                 )
               }
             }

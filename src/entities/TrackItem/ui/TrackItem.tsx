@@ -4,8 +4,6 @@ import { Card, Div, Text, Tappable, Image } from '@vkontakte/vkui' // Импор
 import { Song } from '@/shared/types/song' // Импорт типа трека из общих типов
 import { formatSecondsToTime } from '@/shared/lib'
 import styles from './TrackItem.module.scss'
-import audioStore from '@/app/store/AudioStore'
-import { abort } from 'process'
 
 interface TrackItemProps {
   track: Song
@@ -44,19 +42,23 @@ export const TrackItem: React.FC<TrackItemProps> = observer(
         >
           <canvas
             ref={canvasRef}
-            width={32}
-            height={32}
-            style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 2 }}
+            width={16}
+            height={16}
+            style={{ position: 'absolute', top: '21px', left: '28px', zIndex: 2 }}
           ></canvas>
           <Div className={styles.TrackItem}>
-            <Image
-              size={40}
-              loading="lazy"
-              src={track.coverImage}
-              alt="Album Cover"
-              style={{ maxWidth: '100%' }}
-              className={styles.TrackItemImg}
-            />
+            <Div className={styles.imageContainer}>
+              <Image
+                size={40}
+                loading="lazy"
+                src={track.coverImage}
+                alt="Album Cover"
+                style={{ maxWidth: '100%' }}
+                className={styles.TrackItemImg}
+              />
+              <Div className={isCurrent ? styles.imageOverlay : ''}></Div>
+            </Div>
+
             <Div className={styles.TrackItemInfoAboutTrack}>
               <Text weight="1" className={styles.TrackItemTextTitleTrack}>
                 {track.title}

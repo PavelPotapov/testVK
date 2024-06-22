@@ -26,10 +26,6 @@ class AudioStore {
     try {
       this.isLoading = true
       this.songs = await fetchSongs()
-      this.songs.forEach(song => {
-        song.isImageLoaded = false
-        song.isAudioLoaded = false
-      })
     } catch (error) {
       console.error('Error loading songs:', error)
     } finally {
@@ -43,9 +39,11 @@ class AudioStore {
   }
 
   setCanvas(canvas: HTMLCanvasElement) {
-    console.debug('!!! canvas изменили какой он был', this.canvas)
     this.canvas = canvas
-    console.debug('!!! canvas изменили какой он стал', this.canvas)
+  }
+
+  setIsPlaying(state: boolean) {
+    this.isPlaying = state
   }
 
   async setSongDetails({ title, artist, coverImage, lyrics, audioFileUrl }: Song) {
@@ -112,17 +110,8 @@ class AudioStore {
     return this.currentSong?.id === song.id
   }
 
-  removeAudio() {
-    if (this.audio) {
-      this.audio.removeEventListener('timeupdate', this.updateTime)
-      this.audio.removeEventListener('loadedmetadata', this.updateDuration)
-      this.audio = null
-    }
-  }
-
   private _bindEvents() {
     if (!this.audio) return
-
     this.audio.addEventListener('timeupdate', this.updateTime)
     this.audio.addEventListener('loadedmetadata', this.updateDuration)
   }

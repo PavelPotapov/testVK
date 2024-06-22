@@ -3,8 +3,26 @@
 .TrackItem {
   --vkui--size_base_padding_vertical--regular: 9px;
   --vkui--size_base_padding_horizontal--regular: 16px;
+  --TrackItemSingerTitleMr: 13px;
   display: flex;
 }
+
+.imageOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% - var(--TrackItemSingerTitleMr));
+  height: 100%;
+  border-radius: 4px;
+  background: var(--Other-Avatar-Overlay, rgba(0, 0, 0, 0.6)); /* Цвет затемнения */
+  pointer-events: none;
+}
+
+.imageContainer {
+  @include resetPaddingForDivVkUI;
+  position: relative;
+}
+
 
 .TrackItemImg {
   margin-right: 13px;
@@ -29,7 +47,7 @@
 
 .TrackItemSingerTitle {
   --vkui--font_text--font_family--regular: var(--fontRoboto);
-  font-size: 13px;
+  font-size: var(--TrackItemSingerTitleMr);
   font-weight: 400;
   line-height: 16px;
   letter-spacing: 0.2px;
