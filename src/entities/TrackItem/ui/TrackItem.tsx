@@ -5,6 +5,7 @@ import { Song } from '@/shared/types/song' // Импорт типа трека �
 import { formatSecondsToTime } from '@/shared/lib'
 import styles from './TrackItem.module.scss'
 import audioStore from '@/app/store/AudioStore'
+import { abort } from 'process'
 
 interface TrackItemProps {
   track: Song
@@ -41,7 +42,12 @@ export const TrackItem: React.FC<TrackItemProps> = observer(
           onMouseLeave={handleMouseLeave}
           style={{ position: 'relative', overflow: 'hidden' }}
         >
-          <canvas ref={canvasRef} width={160} height={160}></canvas>
+          <canvas
+            ref={canvasRef}
+            width={16}
+            height={16}
+            style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 2 }}
+          ></canvas>
           <Div className={styles.TrackItem}>
             <Image
               size={40}

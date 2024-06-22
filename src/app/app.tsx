@@ -24,7 +24,6 @@ export const App = () => {
           <View activePanel="main">
             <Panel id="main">
               <PanelHeader>VKUI</PanelHeader>
-             
               <SongList />
             </Panel>
           </View>
