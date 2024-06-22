@@ -44,8 +44,8 @@ export const TrackItem: React.FC<TrackItemProps> = observer(
         >
           <canvas
             ref={canvasRef}
-            width={16}
-            height={16}
+            width={32}
+            height={32}
             style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 2 }}
           ></canvas>
           <Div className={styles.TrackItem}>

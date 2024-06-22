@@ -76,8 +76,11 @@ const AudioPlayer: React.FC = observer(() => {
 
               analyserRef.current!.getByteFrequencyData(dataArray)
 
-              canvasCtxRef.current!.fillStyle = 'rgb(0, 0, 0)'
-              canvasCtxRef.current!.fillRect(0, 0, WIDTH, HEIGHT)
+              // Очищаем канвас
+              canvasCtxRef.current!.clearRect(0, 0, WIDTH, HEIGHT)
+
+              // Отключаем антиалиасинг
+              canvasCtxRef.current!.imageSmoothingEnabled = false
 
               const barWidth = WIDTH / 5 // Ширина каждого столбца
 
@@ -91,27 +94,21 @@ const AudioPlayer: React.FC = observer(() => {
                   sum += dataArray[j]
                 }
                 const average = sum / (endIndex - startIndex)
-                const barHeight = average / 2 // Нормализуем высоту столбца
+                const barHeight = (average / 255) * HEIGHT // Нормализуем высоту столбца
 
+                // Рисуем столбик
                 canvasCtxRef.current!.fillStyle = `rgb(${barHeight + 100}, 50, 50)`
                 canvasCtxRef.current!.fillRect(
-                  i * barWidth,
-                  HEIGHT - barHeight / 2,
-                  barWidth,
-                  barHeight
+                  Math.floor(i * barWidth), // Целочисленные координаты
+                  Math.floor(HEIGHT - barHeight / 2), // Целочисленные координаты
+                  Math.ceil(barWidth), // Целочисленные размеры
+                  Math.ceil(barHeight) // Целочисленные размеры
                 )
               }
             }
 
             draw()
           }
-        } else {
-          // Если уже есть активный audioContext, пересоздаем и подключаем анализатор
-          sourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current)
-          analyserRef.current = audioContextRef.current.createAnalyser()
-          analyserRef.current.fftSize = 512
-          sourceRef.current.connect(analyserRef.current)
-          analyserRef.current.connect(audioContextRef.current.destination)
         }
       }
     } catch (e) {
