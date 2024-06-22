@@ -1,50 +1,46 @@
-// src/app/store/AudioStore.ts
 import { makeAutoObservable } from 'mobx'
 import { Song } from '@/shared/types/song'
 import { fetchSongs } from '@/shared/api/songService'
 
 class AudioStore {
-  audio: HTMLAudioElement | null = null // HTMLAudioElement для управления аудио
-  isPlaying: boolean = false // Флаг для отслеживания состояния проигрывания
-  currentTime: number = 0 // Текущее время воспроизведения
-  duration: number = 0 // Длительность аудиозаписи
-  songTitle: string = '' // Название текущей песни
-  artist: string = '' // Исполнитель текущей песни
-  coverImage: string = '' // URL обложки текущей песни
-  lyrics: string = '' // Текст песни
-  audioFileUrl: string = '' // URL аудиофайла текущей песни
-  songs: Song[] = [] // Массив всех песен
-  isLoading: boolean = false // Флаг загрузки данных по списку аудиозаписей
-  currentSong: Song | null = null // Текущая выбранная песня
+  audio: HTMLAudioElement | null = null
+  isPlaying: boolean = false
+  currentTime: number = 0
+  duration: number = 0
+  songTitle: string = ''
+  artist: string = ''
+  coverImage: string = ''
+  lyrics: string = ''
+  audioFileUrl: string = ''
+  songs: Song[] = []
+  isLoading: boolean = false
+  currentSong: Song | null = null
 
   constructor() {
-    makeAutoObservable(this) // Используем makeAutoObservable для автоматического отслеживания изменений
-    this.loadSongs() // Загружаем список песен при создании экземпляра стора
+    makeAutoObservable(this)
+    this.loadSongs()
   }
 
-  // Асинхронная функция для загрузки списка песен
   async loadSongs() {
     try {
-      this.isLoading = true // Устанавливаем флаг загрузки
-      this.songs = await fetchSongs() // Загружаем список песен через API
+      this.isLoading = true
+      this.songs = await fetchSongs()
       this.songs.forEach(song => {
-        song.isImageLoaded = false // Устанавливаем флаги загрузки изображения и аудио для каждой песни
+        song.isImageLoaded = false
         song.isAudioLoaded = false
       })
     } catch (error) {
-      console.error('Error loading songs:', error) // Обрабатываем ошибки загрузки песен
+      console.error('Error loading songs:', error)
     } finally {
-      this.isLoading = false // Снимаем флаг загрузки независимо от результата
+      this.isLoading = false
     }
   }
 
-  // Устанавливаем HTMLAudioElement для управления проигрыванием
   setAudio(audioElement: HTMLAudioElement) {
     this.audio = audioElement
-    this._bindEvents() // Привязываем события проигрывания аудио
+    this._bindEvents()
   }
 
-  // Устанавливаем детали выбранной песни и загружаем изображение и аудио
   async setSongDetails({ title, artist, coverImage, lyrics, audioFileUrl }: Song) {
     this.songTitle = title
     this.artist = artist
@@ -52,108 +48,98 @@ class AudioStore {
     this.lyrics = lyrics
     this.audioFileUrl = audioFileUrl
 
-    const song = this.songs.find(song => song.audioFileUrl === audioFileUrl) // Находим текущую песню в списке
+    const song = this.songs.find(song => song.audioFileUrl === audioFileUrl)
     if (song) {
-      this.currentSong = song // Устанавливаем текущую песню
+      this.currentSong = song
     }
 
-    // Проверяем, загружены ли изображение и аудио для текущей песни
     if (!song?.isImageLoaded) {
-      await this.loadImage(coverImage) // Если нет, загружаем изображение
+      await this.loadImage(coverImage)
     }
     if (!song?.isAudioLoaded) {
-      await this.loadAudio(audioFileUrl) // Если нет, загружаем аудио
+      await this.loadAudio(audioFileUrl)
     }
   }
 
-  // Асинхронная функция для загрузки изображения
   async loadImage(imageUrl: string) {
-    if (!imageUrl) return // Если URL изображения отсутствует, выходим из функции
+    if (!imageUrl) return
     try {
-      const image = new Image() // Создаем новый элемент изображения
+      const image = new Image()
       image.onload = () => {
-        const song = this.songs.find(song => song.coverImage === imageUrl) // Находим песню по URL изображения
+        const song = this.songs.find(song => song.coverImage === imageUrl)
         if (song) {
-          song.isImageLoaded = true // Устанавливаем флаг загрузки изображения
+          song.isImageLoaded = true
         }
       }
-      image.src = imageUrl // Устанавливаем URL изображения для загрузки
+      image.src = imageUrl
     } catch (error) {
-      console.error('Error loading image:', error) // Обрабатываем ошибки загрузки изображения
+      console.error('Error loading image:', error)
     }
   }
 
-  // Асинхронная функция для загрузки аудио
   async loadAudio(audioUrl: string) {
-    if (!audioUrl) return // Если URL аудиофайла отсутствует, выходим из функции
+    if (!audioUrl) return
     try {
-      const audio = new Audio() // Создаем новый элемент Audio
+      const audio = new Audio()
       audio.onloadedmetadata = () => {
-        const song = this.songs.find(song => song.audioFileUrl === audioUrl) // Находим песню по URL аудиофайла
+        const song = this.songs.find(song => song.audioFileUrl === audioUrl)
         if (song) {
-          song.isAudioLoaded = true // Устанавливаем флаг загрузки аудио
+          song.isAudioLoaded = true
         }
       }
-      audio.src = audioUrl // Устанавливаем URL аудиофайла для загрузки
-      audio.load() // Загружаем аудио
+      audio.src = audioUrl
+      audio.load()
     } catch (error) {
-      console.error('Error loading audio:', error) // Обрабатываем ошибки загрузки аудиофайла
+      console.error('Error loading audio:', error)
     }
   }
 
-  // Выбираем песню для проигрывания
   selectSong(song: Song) {
-    this.isLoading = true // Устанавливаем флаг загрузки
-
-    this.setSongDetails(song) // Устанавливаем детали выбранной песни
+    this.isLoading = true
+    this.setSongDetails(song)
       .then(() => {
         if (this.audio) {
-          this.audio.pause() // Приостанавливаем текущее аудио
-          this.audio.currentTime = 0 // Сбрасываем текущее время воспроизведения
-          this.audio.src = this.audioFileUrl // Устанавливаем новый URL аудиофайла
-          // this.audio.load() // Загружаем новый аудиофайл
-          this.audio.play() // Запускаем воспроизведение новой песни
+          this.audio.pause()
+          this.audio.currentTime = 0
+          this.audio.src = this.audioFileUrl
+          this.audio.play()
         }
-        this.isPlaying = true // Устанавливаем состояние проигрывания в true (play)
+        this.isPlaying = true
       })
       .catch(error => {
-        console.error('Error selecting song:', error) // Обрабатываем ошибки выбора песни
+        console.error('Error selecting song:', error)
       })
       .finally(() => {
-        this.isLoading = false // Снимаем флаг загрузки
+        this.isLoading = false
       })
   }
 
-  // Включаем или выключаем проигрывание
   togglePlaying() {
     if (this.audio) {
       if (this.isPlaying) {
-        this.audio.pause() // Приостанавливаем аудио, если оно играет
+        this.audio.pause()
       } else {
-        this.audio.play() // Запускаем аудио, если оно приостановлено
+        this.audio.play()
       }
-      this.isPlaying = !this.isPlaying // Изменяем состояние проигрывания
+      this.isPlaying = !this.isPlaying
     }
   }
 
-  // Обновляем текущее время воспроизведения
   updateTime = () => {
     if (this.audio) {
-      this.currentTime = this.audio.currentTime // Устанавливаем текущее время воспроизведения
+      this.currentTime = this.audio.currentTime
     }
   }
 
-  // Обновляем длительность аудиофайла
   updateDuration = () => {
     if (this.audio) {
-      this.duration = this.audio.duration // Устанавливаем длительность аудиофайла
+      this.duration = this.audio.duration
     }
   }
 
-  // Устанавливаем текущее время воспроизведения
   setCurrentTime(time: number) {
     if (this.audio) {
-      this.audio.currentTime = time // Устанавливаем текущее время воспроизведения аудио
+      this.audio.currentTime = time
     }
   }
 
@@ -161,23 +147,19 @@ class AudioStore {
     return this.currentSong?.id === song.id
   }
 
-  // Метод для удаления аудио элемента из хранилища
   removeAudio() {
     if (this.audio) {
-      // Удаляем все привязанные события
       this.audio.removeEventListener('timeupdate', this.updateTime)
       this.audio.removeEventListener('loadedmetadata', this.updateDuration)
-      this.audio = null // Очищаем ссылку на элемент аудио
+      this.audio = null
     }
   }
 
-  // Привязываем события проигрывания к аудио
   private _bindEvents() {
-    if (!this.audio) return // Если аудио не установлено, выходим из функции
+    if (!this.audio) return
 
-    // Добавляем обработчики событий
-    this.audio.addEventListener('timeupdate', this.updateTime) // Событие обновления времени воспроизведения
-    this.audio.addEventListener('loadedmetadata', this.updateDuration) // Событие загрузки метаданных аудио
+    this.audio.addEventListener('timeupdate', this.updateTime)
+    this.audio.addEventListener('loadedmetadata', this.updateDuration)
   }
 }
 

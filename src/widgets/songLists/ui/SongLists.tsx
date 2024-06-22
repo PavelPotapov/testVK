@@ -8,7 +8,6 @@ import { TrackItem } from '@/entities/TrackItem'
 const SongList: React.FC = observer(() => {
   useEffect(() => {
     const intervalId = setInterval(() => {
-      // Обновляем время воспроизведения каждую секунду
       audioStore.updateTime()
     }, 1000)
 

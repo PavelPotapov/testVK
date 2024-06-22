@@ -1,21 +1,72 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { observer } from 'mobx-react-lite'
 import audioStore from '@/app/store/AudioStore'
-import { Progress, Slider } from '@vkontakte/vkui' // Подставьте корректные импорты из вашего UI-фреймворка
+import { Slider } from '@vkontakte/vkui' // Подставьте корректные импорты из вашего UI-фреймворка
 
 const AudioPlayer: React.FC = observer(() => {
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const [isDragging, setIsDragging] = useState(false) // Состояние для отслеживания перетаскивания ползунка
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   useEffect(() => {
     if (audioRef.current) {
       audioStore.setAudio(audioRef.current)
+      setupVisualizer()
     }
 
     return () => {
       audioStore.removeAudio()
     }
   }, [])
+
+  const setupVisualizer = () => {
+    if (audioRef.current && canvasRef.current) {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext
+      const audioContext = new AudioContext()
+      const source = audioContext.createMediaElementSource(audioRef.current)
+      const analyser = audioContext.createAnalyser()
+
+      source.connect(analyser)
+      analyser.connect(audioContext.destination)
+
+      analyser.fftSize = 256
+      const bufferLength = analyser.frequencyBinCount
+      const dataArray = new Uint8Array(bufferLength)
+
+      const canvas = canvasRef.current
+      const canvasCtx = canvas.getContext('2d')
+      if (!canvasCtx) {
+        console.error('Failed to get canvas context')
+        return
+      }
+
+      const WIDTH = canvas.width
+      const HEIGHT = canvas.height
+
+      const draw = () => {
+        requestAnimationFrame(draw)
+
+        analyser.getByteFrequencyData(dataArray)
+
+        canvasCtx.clearRect(0, 0, WIDTH, HEIGHT)
+
+        const barWidth = (WIDTH / bufferLength) * 2.5
+        let barHeight
+        let x = 0
+
+        for (let i = 0; i < bufferLength; i++) {
+          barHeight = dataArray[i] / 2
+
+          canvasCtx.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)'
+          canvasCtx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight)
+
+          x += barWidth + 1
+        }
+      }
+
+      draw()
+    }
+  }
 
   const formatTime = (time: number): string => {
     const minutes = Math.floor(time / 60)
@@ -25,12 +76,12 @@ const AudioPlayer: React.FC = observer(() => {
 
   const handleSliderChange = (value: number) => {
     if (!isDragging) {
-      audioStore.setCurrentTime(value) // Устанавливаем текущее время только если не идет перетаскивание
+      audioStore.setCurrentTime(value)
     }
   }
 
   const handleSliderDragStart = () => {
-    setIsDragging(true) // Устанавливаем флаг начала перетаскивания
+    setIsDragging(true)
   }
 
   const handleSliderDragEnd: React.DragEventHandler<HTMLDivElement> = event => {
@@ -40,16 +91,17 @@ const AudioPlayer: React.FC = observer(() => {
       const percentage = offsetX / rect.width
       const newValue = percentage * audioStore.duration
 
-      audioStore.setCurrentTime(newValue) // Устанавливаем текущее время по окончании перетаскивания
+      audioStore.setCurrentTime(newValue)
     }
 
-    setIsDragging(false) // Сбрасываем флаг по окончании перетаскивания
+    setIsDragging(false)
   }
 
   return (
     <div>
+      <canvas ref={canvasRef} width="600" height="100"></canvas>
       <audio ref={audioRef} />
-      {audioStore.currentSong && (audioStore.isPlaying || !audioStore.isPlaying) && (
+      {audioStore.currentSong && (
         <>
           <Slider
             value={audioStore.currentTime}
