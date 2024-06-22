@@ -8,6 +8,8 @@ const AudioPlayer: React.FC = observer(() => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const audioContextRef = useRef<AudioContext | null>(null)
+  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null)
+  const analyserRef = useRef<AnalyserNode | null>(null)
 
   useEffect(() => {
     if (audioRef.current) {
@@ -16,67 +18,79 @@ const AudioPlayer: React.FC = observer(() => {
 
     return () => {
       audioStore.removeAudio()
-      if (audioContextRef.current) {
-        audioContextRef.current.close()
-      }
+      cleanupAudioContext()
     }
   }, [])
 
   useEffect(() => {
-    // Обновление аудио, если меняется текущая песня в AudioStore
     if (audioRef.current && audioStore.audioFileUrl) {
       changeAudioSource(audioStore.audioFileUrl)
     }
   }, [audioStore.audioFileUrl])
 
+  const cleanupAudioContext = () => {
+    if (audioContextRef.current) {
+      audioContextRef.current.close().catch(error => {
+        console.error('Failed to close AudioContext:', error)
+      })
+      audioContextRef.current = null
+      sourceRef.current = null
+      analyserRef.current = null
+    }
+  }
+
   const setupVisualizer = () => {
-    if (audioRef.current && canvasRef.current) {
-      const AudioContext = window.AudioContext || (window as any).webkitAudioContext
-      audioContextRef.current = new AudioContext()
-      const audioContext = audioContextRef.current
+    try {
+      if (audioRef.current && canvasRef.current) {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext
+        audioContextRef.current = new AudioContext()
+        const audioContext = audioContextRef.current
 
-      const source = audioContext.createMediaElementSource(audioRef.current)
-      const analyser = audioContext.createAnalyser()
+        sourceRef.current = audioContext.createMediaElementSource(audioRef.current)
+        analyserRef.current = audioContext.createAnalyser()
 
-      source.connect(analyser)
-      analyser.connect(audioContext.destination)
+        sourceRef.current.connect(analyserRef.current)
+        analyserRef.current.connect(audioContext.destination)
 
-      analyser.fftSize = 256
-      const bufferLength = analyser.frequencyBinCount
-      const dataArray = new Uint8Array(bufferLength)
+        analyserRef.current.fftSize = 256
+        const bufferLength = analyserRef.current.frequencyBinCount
+        const dataArray = new Uint8Array(bufferLength)
 
-      const canvas = canvasRef.current
-      const canvasCtx = canvas.getContext('2d')
-      if (!canvasCtx) {
-        console.error('Failed to get canvas context')
-        return
-      }
-
-      const WIDTH = canvas.width
-      const HEIGHT = canvas.height
-
-      const draw = () => {
-        requestAnimationFrame(draw)
-
-        analyser.getByteFrequencyData(dataArray)
-
-        canvasCtx.clearRect(0, 0, WIDTH, HEIGHT)
-
-        const barWidth = (WIDTH / bufferLength) * 2.5
-        let barHeight
-        let x = 0
-
-        for (let i = 0; i < bufferLength; i++) {
-          barHeight = dataArray[i] / 2
-
-          canvasCtx.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)'
-          canvasCtx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight)
-
-          x += barWidth + 1
+        const canvas = canvasRef.current
+        const canvasCtx = canvas.getContext('2d')
+        if (!canvasCtx) {
+          console.error('Failed to get canvas context')
+          return
         }
-      }
 
-      draw()
+        const WIDTH = canvas.width
+        const HEIGHT = canvas.height
+
+        const draw = () => {
+          requestAnimationFrame(draw)
+
+          if (analyserRef.current) analyserRef.current.getByteFrequencyData(dataArray)
+
+          canvasCtx.clearRect(0, 0, WIDTH, HEIGHT)
+
+          const barWidth = (WIDTH / bufferLength) * 2.5
+          let barHeight
+          let x = 0
+
+          for (let i = 0; i < bufferLength; i++) {
+            barHeight = dataArray[i] / 2
+
+            canvasCtx.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)'
+            canvasCtx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight)
+
+            x += barWidth + 1
+          }
+        }
+
+        draw()
+      }
+    } catch (e) {
+      console.error(e, '!!!')
     }
   }
 
@@ -114,10 +128,6 @@ const AudioPlayer: React.FC = observer(() => {
       audioRef.current.pause()
       audioRef.current.src = newSrc
       audioRef.current.load()
-
-      if (audioContextRef.current) {
-        audioContextRef.current.close()
-      }
 
       setupVisualizer()
     }
