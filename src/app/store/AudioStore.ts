@@ -43,7 +43,9 @@ class AudioStore {
   }
 
   setCanvas(canvas: HTMLCanvasElement) {
+    console.debug('!!! canvas изменили какой он был', this.canvas)
     this.canvas = canvas
+    console.debug('!!! canvas изменили какой он стал', this.canvas)
   }
 
   async setSongDetails({ title, artist, coverImage, lyrics, audioFileUrl }: Song) {

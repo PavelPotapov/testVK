@@ -15,11 +15,12 @@ const SongList: React.FC = observer(() => {
     return () => clearInterval(intervalId)
   }, [])
 
-  const handleSongClick = (song: Song) => {
+  const handleSongClick = (song: Song, canvas: HTMLCanvasElement) => {
     if (audioStore.isCurrentSong(song)) {
       audioStore.togglePlaying()
     } else {
       audioStore.selectSong(song)
+      audioStore.setCanvas(canvas)
     }
   }
 

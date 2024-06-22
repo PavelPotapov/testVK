@@ -5,7 +5,8 @@ import { Slider } from '@vkontakte/vkui' // Подставьте коррект�
 
 const AudioPlayer: React.FC = observer(() => {
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null) // Создаем реф для canvas
+  const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null) // Реф на контекст canvas
   const [isDragging, setIsDragging] = useState(false)
   const audioContextRef = useRef<AudioContext | null>(null)
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null)
@@ -29,6 +30,7 @@ const AudioPlayer: React.FC = observer(() => {
 
   useEffect(() => {
     if (audioRef.current && audioStore.audioFileUrl) {
+      console.debug('!!!! поменяли url audio')
       changeAudioSource(audioStore.audioFileUrl)
     }
   }, [audioStore.audioFileUrl])
@@ -47,8 +49,11 @@ const AudioPlayer: React.FC = observer(() => {
   }
 
   const setupVisualizer = () => {
+    canvasRef.current = audioStore.canvas
+    console.debug('Новый канвас', canvasRef.current)
     try {
-      if (audioRef.current && canvasRef.current) {
+      if (audioRef.current && audioStore.canvas) {
+        // Используем canvas из стора
         if (!audioContextRef.current) {
           audioContextRef.current = new AudioContext()
           sourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current)
@@ -58,8 +63,9 @@ const AudioPlayer: React.FC = observer(() => {
           analyserRef.current.connect(audioContextRef.current.destination)
 
           const canvas = canvasRef.current
-          const canvasCtx = canvas.getContext('2d')
-          if (canvasCtx) {
+          const canvasCtx = canvas?.getContext('2d')
+          if (canvasCtx && canvas) {
+            canvasCtxRef.current = canvasCtx
             const WIDTH = canvas.width
             const HEIGHT = canvas.height
             const bufferLength = analyserRef.current.frequencyBinCount
@@ -70,10 +76,8 @@ const AudioPlayer: React.FC = observer(() => {
 
               analyserRef.current!.getByteFrequencyData(dataArray)
 
-              canvasCtx.fillStyle = 'rgb(0, 0, 0)'
-              canvasCtx.fillRect(0, 0, WIDTH, HEIGHT)
-
-              console.debug(bufferLength)
+              canvasCtxRef.current!.fillStyle = 'rgb(0, 0, 0)'
+              canvasCtxRef.current!.fillRect(0, 0, WIDTH, HEIGHT)
 
               const barWidth = WIDTH / 5 // Ширина каждого столбца
 
@@ -89,13 +93,25 @@ const AudioPlayer: React.FC = observer(() => {
                 const average = sum / (endIndex - startIndex)
                 const barHeight = average / 2 // Нормализуем высоту столбца
 
-                canvasCtx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`
-                canvasCtx.fillRect(i * barWidth, HEIGHT - barHeight / 2, barWidth, barHeight)
+                canvasCtxRef.current!.fillStyle = `rgb(${barHeight + 100}, 50, 50)`
+                canvasCtxRef.current!.fillRect(
+                  i * barWidth,
+                  HEIGHT - barHeight / 2,
+                  barWidth,
+                  barHeight
+                )
               }
             }
 
             draw()
           }
+        } else {
+          // Если уже есть активный audioContext, пересоздаем и подключаем анализатор
+          sourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current)
+          analyserRef.current = audioContextRef.current.createAnalyser()
+          analyserRef.current.fftSize = 512
+          sourceRef.current.connect(analyserRef.current)
+          analyserRef.current.connect(audioContextRef.current.destination)
         }
       }
     } catch (e) {
@@ -113,6 +129,12 @@ const AudioPlayer: React.FC = observer(() => {
           console.error('Failed to play audio:', error)
         })
       } catch (e) {}
+    }
+    // Обновляем canvas и контекст, если меняется canvas
+    canvasRef.current = audioStore.canvas
+    const canvasCtx = canvasRef.current?.getContext('2d')
+    if (canvasCtx) {
+      canvasCtxRef.current = canvasCtx
     }
   }
 
@@ -147,7 +169,6 @@ const AudioPlayer: React.FC = observer(() => {
 
   return (
     <div>
-      <canvas ref={canvasRef} width="16" height="16"></canvas>
       <audio ref={audioRef} />
       {audioStore.currentSong && (
         <>

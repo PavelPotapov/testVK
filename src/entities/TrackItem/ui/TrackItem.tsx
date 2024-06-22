@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { observer } from 'mobx-react-lite'
 import { Card, Div, Text, Tappable, Image } from '@vkontakte/vkui' // Импорт компонентов Card, Div, Text, Tappable, Image из VKUI
 import { Song } from '@/shared/types/song' // Импорт типа трека из общих типов
@@ -9,13 +9,14 @@ import audioStore from '@/app/store/AudioStore'
 interface TrackItemProps {
   track: Song
   isCurrent: boolean // Определяет, является ли трек текущим (выбранным)
-  onTrackClick: (track: Song) => void
+  onTrackClick: (track: Song, canvas: HTMLCanvasElement) => void
   currentTime: number
 }
 
 export const TrackItem: React.FC<TrackItemProps> = observer(
   ({ track, isCurrent, onTrackClick, currentTime }) => {
     const [isHovered, setIsHovered] = useState(false)
+    const canvasRef = useRef<HTMLCanvasElement>(null)
 
     const handleMouseEnter = () => {
       setIsHovered(true)
@@ -26,7 +27,7 @@ export const TrackItem: React.FC<TrackItemProps> = observer(
     }
 
     const handleSongClick = () => {
-      onTrackClick(track)
+      if (canvasRef.current) onTrackClick(track, canvasRef.current)
     }
 
     // Формирование класса карточки в зависимости от выбранного состояния
@@ -40,6 +41,7 @@ export const TrackItem: React.FC<TrackItemProps> = observer(
           onMouseLeave={handleMouseLeave}
           style={{ position: 'relative', overflow: 'hidden' }}
         >
+          <canvas ref={canvasRef} width={160} height={160}></canvas>
           <Div className={styles.TrackItem}>
             <Image
               size={40}
