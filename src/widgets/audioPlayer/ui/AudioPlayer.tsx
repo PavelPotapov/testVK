@@ -13,24 +13,29 @@ const AudioPlayer: React.FC = observer(() => {
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
   const animationFrameRef = useRef<number | null>(null)
+  const [volume, setVolume] = useState(100) // Состояние для уровня громкости
 
+  //Mount
   useEffect(() => {
     audioRef.current = new Audio()
     audioRef.current.addEventListener('loadedmetadata', setupVisualizer)
     if (audioRef.current) {
       audioStore.setAudio(audioRef.current)
     }
+
     return () => {
       cleanupAudioContext()
     }
   }, [])
 
+  //Смена трека
   useEffect(() => {
     if (audioRef.current && audioStore.audioFileUrl) {
       changeAudioSource(audioStore.audioFileUrl)
     }
   }, [audioStore.audioFileUrl])
 
+  //Чистка аудиоконтекста
   const cleanupAudioContext = () => {
     if (audioContextRef.current) {
       audioContextRef.current.close().catch(error => {
@@ -43,6 +48,21 @@ const AudioPlayer: React.FC = observer(() => {
       animationFrameRef.current = null
     }
   }
+
+  //Функция чистки canvas поля (при переключении треков)
+  const clearCanvas = () => {
+    console.log('Произошла смена canvas')
+    const canvasCtx = canvasCtxRef.current
+    if (canvasCtx) {
+      const canvas = canvasCtx.canvas
+      canvasCtx.clearRect(0, 0, canvas.width, canvas.height)
+    }
+  }
+
+  useEffect(() => {
+    console.log('$$$$$$$$$$$$$$')
+    console.log(audioStore.isPlaying, audioStore.audioFileUrl, audioStore.audio, audioStore.canvas)
+  }, [audioStore.isPlaying])
 
   const setupVisualizer = () => {
     try {
@@ -111,7 +131,6 @@ const AudioPlayer: React.FC = observer(() => {
                 )
               }
             }
-
             draw()
           }
         }
@@ -130,9 +149,12 @@ const AudioPlayer: React.FC = observer(() => {
         audioRef.current.play().catch(error => {
           console.error('Failed to play audio:', error)
         })
-      } catch (e) {}
+      } catch (e) {
+        console.error(e)
+      }
     }
-    // Обновляем canvas и контекст, если меняется canvas
+    clearCanvas()
+    // Обновляем canvas и контекст
     canvasRef.current = audioStore.canvas
     const canvasCtx = canvasRef.current?.getContext('2d')
     if (canvasCtx) {
@@ -169,6 +191,13 @@ const AudioPlayer: React.FC = observer(() => {
     setIsDragging(false)
   }
 
+  const handleVolumeChange = (value: number) => {
+    setVolume(value)
+    if (audioRef.current) {
+      audioRef.current.volume = value / 100 // Обновляем уровень громкости при изменении слайдера
+    }
+  }
+
   return (
     <div>
       <audio ref={audioRef} />
@@ -181,6 +210,13 @@ const AudioPlayer: React.FC = observer(() => {
             onChange={handleSliderChange}
             onDragStart={handleSliderDragStart}
             onDragEnd={handleSliderDragEnd}
+            style={{ width: '100%' }}
+          />
+          <Slider
+            value={volume}
+            min={0}
+            max={100}
+            onChange={handleVolumeChange}
             style={{ width: '100%' }}
           />
         </>
