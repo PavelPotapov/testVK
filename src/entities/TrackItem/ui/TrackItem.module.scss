@@ -4,7 +4,20 @@
   --vkui--size_base_padding_vertical--regular: 9px;
   --vkui--size_base_padding_horizontal--regular: 16px;
   --TrackItemSingerTitleMr: 13px;
+  --TrackItemOverlayImageColor: rgba(0, 0, 0, 0.6);
+  --TrackItemOverlay: rgba(0, 0, 0, 0.1);
   display: flex;
+}
+
+.TrackItemOverlay {
+  transition: background-color 0.3s ease;
+  pointer-events: none; // Чтобы не мешал обработке кликов на Card
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
 }
 
 .imageOverlay {
@@ -14,7 +27,7 @@
   width: calc(100% - var(--TrackItemSingerTitleMr));
   height: 100%;
   border-radius: 4px;
-  background: var(--Other-Avatar-Overlay, rgba(0, 0, 0, 0.6)); /* Цвет затемнения */
+  background: var(--TrackItemOverlayImageColor, rgba(0, 0, 0, 0.6)); /* Цвет затемнения */
   pointer-events: none;
 }
 
@@ -23,23 +36,29 @@
   position: relative;
 }
 
-
 .TrackItemImg {
-  margin-right: 13px;
-  border-radius: 8px;
   width: 100%;
   height: 100%;
+  margin-right: 13px;
+  border-radius: 8px;
   object-fit: cover;
+}
+
+.TrackItemCanvas {
+  position: absolute;
+  top: 21px;
+  left: 28px;
+  z-index: 2;
 }
 
 .TrackItemInfoAboutTrack {
   @include resetPaddingForDivVkUI;
 }
 
-.TrackItemTextTitleTrack {
+.TrackItemTitleTrack {
   --vkui--font_text--font_family--regular: var(--fontRoboto);
-  font-size: 16px;
-  font-weight: 400;
+  --vkui--font_weight_accent1: 400;
+  --vkui--font_text--font_size--compact: 16px;
   line-height: 20px;
   letter-spacing: 0.15px;
   text-align: left;
@@ -57,10 +76,10 @@
 
 .TrackItemArtist {
   font-size: 14px;
-  color: #666; /* Пример установки цвета текста */
+  color: #666;
 }
 
 .TrackItemDuration {
   font-size: 14px;
-  color: #888; /* Пример установки другого цвета текста */
+  color: #888;
 }

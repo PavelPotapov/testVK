@@ -1,22 +1,48 @@
 {
   "songs": [
     {
-      "id": "1",
-      "title": "Фильтр",
-      "artist": "ATL",
-      "coverImage": "/images/test.png",
-      "lyrics": "Моторчик...",
-      "audioFileUrl": "/audio/test.mp3",
-      "duration": 35
+      "id": "3",
+      "title": "Another Song",
+      "artist": {
+        "name": "Artist Name",
+        "artistLink": "https:/vk/1231"
+      },
+      "pictures": {
+        "coverPicture": "/images/trackFirst_1x.png",
+        "coverPicture2x": "/images/trackFirst_2x.png"
+      },
+      "album": {
+        "coverAlbum": "Обложка альбома"
+      },
+      "audio": {
+        "title": "Another Song",
+        "lyrics": "Another sample lyrics...",
+        "audioFileLink": "/audio/test2.mp3",
+        "duration": 55,
+        "audioDetailLink": "https:/vk/audio/1231"
+      }
     },
     {
-      "id": "2",
+      "id": "4",
       "title": "Another Song",
-      "artist": "Another Artist",
-      "coverImage": "/images/profile.jpg",
-      "lyrics": "Another sample lyrics...",
-      "audioFileUrl": "/audio/test2.mp3",
-      "duration": 55
+      "artist": {
+        "name": "Artist Name",
+        "artistLink": "https:/vk/1231"
+      },
+      "pictures": {
+        "coverPicture": "/images/trackFirst_1x.png",
+        "coverPicture2x": "/images/trackFirst_2x.png"
+      },
+      "album": {
+        "coverAlbum": "Обложка альбома"
+      },
+      "audio": {
+        "title": "Another Song",
+        "lyrics": "Another sample lyrics...",
+        "audioFileLink": "/audio/test.mp3",
+        "duration": 55,
+        "audioDetailLink": "https:/vk/audio/1231"
+      }
     }
   ]
 }

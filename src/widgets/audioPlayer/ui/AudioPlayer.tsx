@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite'
 import audioStore from '@/app/store/AudioStore'
 import { Slider } from '@vkontakte/vkui' // Подставьте корректные импорты из вашего UI-фреймворка
 import { roundRect } from '../lib/canvas'
+import VolumeControl from '@/shared/ui/volumeControl/VolumeControl'
 
 const AudioPlayer: React.FC = observer(() => {
   const [volume, setVolume] = useState(100)
@@ -15,7 +16,6 @@ const AudioPlayer: React.FC = observer(() => {
   const analyserRef = useRef<AnalyserNode | null>(null)
   const animationFrameRef = useRef<number | null>(null)
 
- 
   useEffect(() => {
     audioRef.current = new Audio()
     audioRef.current.addEventListener('loadedmetadata', setupVisualizer)
@@ -30,10 +30,10 @@ const AudioPlayer: React.FC = observer(() => {
 
   //Смена трека
   useEffect(() => {
-    if (audioRef.current && audioStore.audioFileUrl) {
-      changeAudioSource(audioStore.audioFileUrl)
+    if (audioRef.current && audioStore.audioFileLink) {
+      changeAudioSource(audioStore.audioFileLink)
     }
-  }, [audioStore.audioFileUrl])
+  }, [audioStore.audioFileLink])
 
   const cleanupAudioContext = () => {
     if (audioContextRef.current) {
@@ -55,11 +55,6 @@ const AudioPlayer: React.FC = observer(() => {
       canvasCtx.clearRect(0, 0, canvas.width, canvas.height)
     }
   }
-
-  useEffect(() => {
-    console.log('$$$$$$$$$$$$$$')
-    //console.log(audioStore.isPlaying, audioStore.audioFileUrl, audioStore.audio, audioStore.canvas)
-  }, [audioStore.isPlaying])
 
   const setupVisualizer = () => {
     try {
@@ -86,40 +81,42 @@ const AudioPlayer: React.FC = observer(() => {
             const borderRadius = 10 // Радиус скругления углов
 
             const draw = () => {
-              animationFrameRef.current = requestAnimationFrame(draw)
-              analyserRef.current!.getByteFrequencyData(dataArray)
+              if (audioStore.isPlaying) {
+                analyserRef.current!.getByteFrequencyData(dataArray)
 
-              // Очищаем канвас
-              canvasCtxRef.current!.clearRect(0, 0, WIDTH, HEIGHT)
+                // Очищаем канвас
+                canvasCtxRef.current!.clearRect(0, 0, WIDTH, HEIGHT)
 
-              // Отключаем антиалиасинг
-              canvasCtxRef.current!.imageSmoothingEnabled = false
+                // Отключаем антиалиасинг
+                canvasCtxRef.current!.imageSmoothingEnabled = false
 
-              const barHeightScale = HEIGHT / 255 // Масштаб высоты столбиков по максимальному значению
+                const barHeightScale = HEIGHT / 255 // Масштаб высоты столбиков по максимальному значению
 
-              for (let i = 0; i < 5; i++) {
-                const startIndex = Math.floor((bufferLength / 5) * i)
-                const endIndex = Math.floor((bufferLength / 5) * (i + 1))
+                for (let i = 0; i < 5; i++) {
+                  const startIndex = Math.floor((bufferLength / 5) * i)
+                  const endIndex = Math.floor((bufferLength / 5) * (i + 1))
 
-                // Находим среднее значение амплитуды в каждой группе
-                let sum = 0
-                for (let j = startIndex; j < endIndex; j++) {
-                  sum += dataArray[j]
+                  // Находим среднее значение амплитуды в каждой группе
+                  let sum = 0
+                  for (let j = startIndex; j < endIndex; j++) {
+                    sum += dataArray[j]
+                  }
+                  const average = sum / (endIndex - startIndex)
+                  const barHeight = average * barHeightScale // Нормализуем высоту столбика
+
+                  // Рисуем скругленный столбик
+                  canvasCtxRef.current!.fillStyle = `rgb(255, 255, 255)`
+                  roundRect(
+                    canvasCtxRef.current!,
+                    i * (barWidth + gap) + gap / 2, // x1
+                    HEIGHT - barHeight, // y1
+                    i * (barWidth + gap) + gap / 2 + barWidth, // x2
+                    HEIGHT, // y2
+                    borderRadius // radius
+                  )
                 }
-                const average = sum / (endIndex - startIndex)
-                const barHeight = average * barHeightScale // Нормализуем высоту столбика
-
-                // Рисуем скругленный столбик
-                canvasCtxRef.current!.fillStyle = `rgb(255, 255, 255)`
-                roundRect(
-                  canvasCtxRef.current!,
-                  i * (barWidth + gap) + gap / 2, // x1
-                  HEIGHT - barHeight, // y1
-                  i * (barWidth + gap) + gap / 2 + barWidth, // x2
-                  HEIGHT, // y2
-                  borderRadius // radius
-                )
               }
+              animationFrameRef.current = requestAnimationFrame(draw)
             }
             draw()
           }
@@ -203,13 +200,7 @@ const AudioPlayer: React.FC = observer(() => {
             onDragEnd={handleSliderDragEnd}
             style={{ width: '100%' }}
           />
-          <Slider
-            value={volume}
-            min={0}
-            max={100}
-            onChange={handleVolumeChange}
-            style={{ width: '100%' }}
-          />
+          <VolumeControl volume={volume} onVolumeChange={handleVolumeChange} />
         </>
       )}
       {audioStore.isLoading && <p>Loading...</p>}

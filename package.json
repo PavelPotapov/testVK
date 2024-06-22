@@ -52,6 +52,7 @@
     "webpack-dev-server": "^4.15.1"
   },
   "dependencies": {
+    "@vkontakte/icons": "^2.122.0",
     "@vkontakte/vkjs": "^1.2.0",
     "@vkontakte/vkui": "^6.1.1",
     "mobx": "^6.12.4",

@@ -7,11 +7,10 @@ class AudioStore {
   isPlaying: boolean = false
   currentTime: number = 0
   duration: number = 0
-  songTitle: string = ''
-  artist: string = ''
-  coverImage: string = ''
+  audioTitle: string = ''
+  artistName: string = ''
   lyrics: string = ''
-  audioFileUrl: string = ''
+  audioFileLink: string = ''
   songs: Song[] = []
   isLoading: boolean = false
   currentSong: Song | null = null
@@ -46,14 +45,12 @@ class AudioStore {
     this.isPlaying = state
   }
 
-  async setSongDetails({ title, artist, coverImage, lyrics, audioFileUrl }: Song) {
-    this.songTitle = title
-    this.artist = artist
-    this.coverImage = coverImage
+  async setSongDetails({ title, artist, pictures, lyrics, audio }: Song) {
+    this.audioTitle = title
+    this.artistName = artist.name
     this.lyrics = lyrics
-    this.audioFileUrl = audioFileUrl
-
-    const song = this.songs.find(song => song.audioFileUrl === audioFileUrl)
+    this.audioFileLink = audio.audioFileLink
+    const song = this.songs.find(song => song.audio.audioFileLink === audio.audioFileLink)
     if (song) {
       this.currentSong = song
     }
@@ -62,19 +59,12 @@ class AudioStore {
   selectSong(song: Song) {
     this.isLoading = true
     this.setSongDetails(song)
-      .then(() => {
-        if (this.audio) {
-          this.audio.currentTime = 0
-          this.audio.src = this.audioFileUrl
-        }
-        this.isPlaying = true
-      })
-      .catch(error => {
-        console.error('Error selecting song:', error)
-      })
-      .finally(() => {
-        this.isLoading = false
-      })
+    if (this.audio) {
+      this.audio.currentTime = 0
+      this.audio.src = this.audioFileLink
+    }
+    this.isPlaying = true
+    this.isLoading = false
   }
 
   togglePlaying() {

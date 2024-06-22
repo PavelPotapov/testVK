@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState } from 'react'
 import { observer } from 'mobx-react-lite'
 import { Card, Div, Text, Tappable, Image } from '@vkontakte/vkui' // Импорт компонентов Card, Div, Text, Tappable, Image из VKUI
 import { Song } from '@/shared/types/song' // Импорт типа трека из общих типов
@@ -44,15 +44,16 @@ export const TrackItem: React.FC<TrackItemProps> = observer(
             ref={canvasRef}
             width={16}
             height={16}
-            style={{ position: 'absolute', top: '21px', left: '28px', zIndex: 2 }}
+            className={styles.TrackItemCanvas}
           ></canvas>
           <Div className={styles.TrackItem}>
             <Div className={styles.imageContainer}>
               <Image
                 size={40}
                 loading="lazy"
-                src={track.coverImage}
-                alt="Album Cover"
+                src={track.pictures.coverPicture}
+                alt={track.coverAlbum}
+                srcSet={`${track.pictures.coverPicture} 1x, ${track.pictures.coverPicture2x} 2x`}
                 style={{ maxWidth: '100%' }}
                 className={styles.TrackItemImg}
               />
@@ -60,30 +61,27 @@ export const TrackItem: React.FC<TrackItemProps> = observer(
             </Div>
 
             <Div className={styles.TrackItemInfoAboutTrack}>
-              <Text weight="1" className={styles.TrackItemTextTitleTrack}>
-                {track.title}
+              <Text weight="1" className={styles.TrackItemTitleTrack}>
+                {track.audio.title}
               </Text>
-              <Text className={styles.TrackItemSingerTitle}>{track.artist}</Text>
+              <Text className={styles.TrackItemSingerTitle}>{track.artist.name}</Text>
             </Div>
             <Div>
               <Text>
-                {isCurrent ? formatSecondsToTime(currentTime) : formatSecondsToTime(track.duration)}
+                {isCurrent
+                  ? formatSecondsToTime(currentTime)
+                  : formatSecondsToTime(track.audio.duration)}
               </Text>
             </Div>
           </Div>
           {/* Эффект затемнения при наведении */}
+          {/* TODO: Доделать var */}
           <div
-            className="overlay"
+            className={styles.TrackItemOverlay}
             style={{
-              backgroundColor: isHovered ? 'rgba(0, 0, 0, 0.1)' : 'transparent',
-              transition: 'background-color 0.3s ease',
-              pointerEvents: 'none', // Чтобы не мешал обработке кликов на Card
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              zIndex: 1
+              backgroundColor: isHovered
+                ? 'var(--TrackItemOverlay, rgba(0, 0, 0, 0.1))'
+                : 'transparent'
             }}
           />
         </Card>
