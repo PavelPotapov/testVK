@@ -64,7 +64,7 @@ export const TrackItem: React.FC<TrackItemProps> = observer(
                   loading="lazy"
                   src={track.pictures.coverPicture}
                   alt={track.album.coverAlbum}
-                  srcSet={`${track.pictures.coverPicture} 1x, ${track.pictures.coverPicture2x} 2x`}
+                  srcSet={`${track.pictures.coverPicture} 1x ${track.pictures.coverPicture2x && ',' + track.pictures.coverPicture2x + '2x'}`}
                   className={styles.TrackItemImg}
                 />
               ) : (
