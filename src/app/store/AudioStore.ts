@@ -45,13 +45,14 @@ class AudioStore {
     this.isPlaying = state
   }
 
-  async setSongDetails({ title, artist, pictures, lyrics, audio }: Song) {
+  async setSongDetails({ title, artist, audio, id }: Song) {
     this.audioTitle = title
     this.artistName = artist.name
-    this.lyrics = lyrics
+    this.lyrics = audio.lyrics
     this.audioFileLink = audio.audioFileLink
-    const song = this.songs.find(song => song.audio.audioFileLink === audio.audioFileLink)
+    const song = this.songs.find(song => song.id === id)
     if (song) {
+      console.debug('Пенся найдена', song.id, '!!')
       this.currentSong = song
     }
   }

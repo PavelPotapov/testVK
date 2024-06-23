@@ -1,0 +1,7 @@
+.SongLists {
+  --SongListsGap: 10px;
+  --SongListFlexDirection: column;
+  display: flex;
+  gap: var(--SongListsGap, 10px);
+  flex-direction: var(--SongListFlexDirection, column);
+}

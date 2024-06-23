@@ -6,14 +6,12 @@ import {
   View,
   Panel,
   PanelHeader,
-  Header,
-  Group,
-  SimpleCell,
+  Div,
   usePlatform
 } from '@vkontakte/vkui'
 import '@vkontakte/vkui/dist/vkui.css'
 import './styles'
-import AudioPlayer from '@/widgets/audioPlayer/ui/AudioPlayer'
+import AudioPlayer from '@/features/audioPlayer/ui/AudioPlayer'
 
 export const App = () => {
   const platform = usePlatform()
@@ -25,8 +23,10 @@ export const App = () => {
           <View activePanel="main">
             <Panel id="main">
               <PanelHeader>VKUI</PanelHeader>
-              <SongList />
-              <AudioPlayer />
+              <Div className="mainContainer">
+                <SongList />
+                <AudioPlayer />
+              </Div>
             </Panel>
           </View>
         </SplitCol>

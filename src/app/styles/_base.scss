@@ -1,0 +1,4 @@
+:global(.mainContainer) {
+  width: clamp(360px, 35vw, 800px);
+  margin: 0 auto;
+}

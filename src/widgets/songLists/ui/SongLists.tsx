@@ -4,6 +4,7 @@ import { List, Cell, Tappable } from '@vkontakte/vkui'
 import audioStore from '@/app/store/AudioStore'
 import { Song } from '@/shared/types/song'
 import { TrackItem } from '@/entities/TrackItem'
+import styles from './SongLists.module.scss'
 
 const SongList: React.FC = observer(() => {
   useEffect(() => {
@@ -25,7 +26,7 @@ const SongList: React.FC = observer(() => {
 
   return (
     <div>
-      <List>
+      <List className={styles.SongLists}>
         {audioStore.songs.map(song => (
           <TrackItem
             key={song.id}
@@ -36,7 +37,6 @@ const SongList: React.FC = observer(() => {
           />
         ))}
       </List>
-      
     </div>
   )
 })
