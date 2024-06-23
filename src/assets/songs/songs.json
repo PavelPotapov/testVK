@@ -26,7 +26,7 @@
       "title": "Baby One More Time",
       "artist": {
         "name": "Britney Spears",
-        "artistLink": "https:/vk/1231"
+        "artistLink": "https://vk.com/artist/britneyspears"
       },
       "pictures": {
         "coverPicture": "./images/oneMoreTime_1x.jpg"
@@ -58,7 +58,7 @@
       "audio": {
         "title": "Фильтр",
         "lyrics": "Another sample lyrics...",
-        "audioFileLink": "./audio/test.mp3",
+        "audioFileLink": "./audio/Atl-Фильтр.mp3",
         "duration": 139,
         "audioDetailLink": "https://vk.com/audio-2001056819_122056819"
       }
