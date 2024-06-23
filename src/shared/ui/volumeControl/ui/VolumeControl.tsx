@@ -1,15 +1,16 @@
 import React from 'react'
 import { Icon28VolumeCircleFillGray } from '@vkontakte/icons'
-import { Slider } from '@vkontakte/vkui'
+import { Slider, Div } from '@vkontakte/vkui'
+import styles from './Volume.module.scss'
 
 interface VolumeControlProps {
   volume: number
   onVolumeChange: (value: number) => void
 }
 
-const VolumeControl: React.FC<VolumeControlProps> = ({ volume, onVolumeChange }) => {
+export const VolumeControl: React.FC<VolumeControlProps> = ({ volume, onVolumeChange }) => {
   return (
-    <div style={{ width: '200px', display: 'flex', alignItems: 'center' }}>
+    <Div className={styles.VolumeControl}>
       <Icon28VolumeCircleFillGray />
       <Slider
         value={volume}
@@ -18,8 +19,6 @@ const VolumeControl: React.FC<VolumeControlProps> = ({ volume, onVolumeChange })
         onChange={onVolumeChange}
         style={{ width: '100%', marginLeft: '10px' }}
       />
-    </div>
+    </Div>
   )
 }
-
-export default VolumeControl

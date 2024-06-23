@@ -1,8 +1,9 @@
 import { Song } from '@/shared/types/song'
+import { API_ENDPOINTS } from '../config/constants'
 
-export async function fetchSongs(): Promise<Song[]> {
+export async function getSongs(): Promise<Song[]> {
   try {
-    const response = await fetch('/songs/songs.json')
+    const response = await fetch(API_ENDPOINTS.songs.getSongs)
     const data = await response.json()
     return data.songs
   } catch (error) {

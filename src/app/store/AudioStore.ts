@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx'
 import { Song } from '@/shared/types/song'
-import { fetchSongs } from '@/shared/api/songService'
+import { getSongs } from '@/shared/api'
 
 class AudioStore {
   audio: HTMLAudioElement | null = null
@@ -16,15 +16,24 @@ class AudioStore {
   currentSong: Song | null = null
   canvas: HTMLCanvasElement | null = null
 
+  private static instance: AudioStore
+
   constructor() {
     makeAutoObservable(this)
     this.loadSongs()
   }
 
+  static getInstance() {
+    if (!AudioStore.instance) {
+      AudioStore.instance = new AudioStore()
+    }
+    return AudioStore.instance
+  }
+
   async loadSongs() {
     try {
       this.isLoading = true
-      this.songs = await fetchSongs()
+      this.songs = await getSongs()
     } catch (error) {
       console.error('Error loading songs:', error)
     } finally {
@@ -52,20 +61,17 @@ class AudioStore {
     this.audioFileLink = audio.audioFileLink
     const song = this.songs.find(song => song.id === id)
     if (song) {
-      console.debug('Пенся найдена', song.id, '!!')
       this.currentSong = song
     }
   }
 
   selectSong(song: Song) {
-    this.isLoading = true
     this.setSongDetails(song)
     if (this.audio) {
       this.audio.currentTime = 0
       this.audio.src = this.audioFileLink
     }
     this.isPlaying = true
-    this.isLoading = false
   }
 
   togglePlaying() {
@@ -108,4 +114,4 @@ class AudioStore {
   }
 }
 
-export default new AudioStore()
+export default AudioStore.getInstance()

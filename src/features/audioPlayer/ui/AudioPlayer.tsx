@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { observer } from 'mobx-react-lite'
-import audioStore from '@/app/store/AudioStore'
 import { Slider, Div } from '@vkontakte/vkui' // Подставьте корректные импорты из вашего UI-фреймворка
 import { roundRect } from '../lib/canvas'
-import VolumeControl from '@/shared/ui/volumeControl/VolumeControl'
+import { VolumeControl } from '@/shared/ui/volumeControl'
+import audioStore from '@/app/store/AudioStore'
+import { formatSecondsToTime } from '@/shared/lib'
 
-const AudioPlayer: React.FC = observer(() => {
+export const AudioPlayer: React.FC = observer(() => {
   const [volume, setVolume] = useState(100)
   const [isDragging, setIsDragging] = useState(false)
   const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null)
@@ -150,12 +151,6 @@ const AudioPlayer: React.FC = observer(() => {
     }
   }
 
-  const formatTime = (time: number): string => {
-    const minutes = Math.floor(time / 60)
-    const seconds = Math.floor(time % 60)
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
-  }
-
   const handleSliderChange = (value: number) => {
     if (!isDragging) {
       audioStore.setCurrentTime(value)
@@ -190,7 +185,7 @@ const AudioPlayer: React.FC = observer(() => {
     <div>
       <audio ref={audioRef} />
       {audioStore.currentSong && (
-        <Div>
+        <Div className="isHiddenVkUiSliderThumb">
           <Slider
             value={audioStore.currentTime}
             min={0}
@@ -200,6 +195,10 @@ const AudioPlayer: React.FC = observer(() => {
             onDragEnd={handleSliderDragEnd}
             style={{ width: '100%' }}
           />
+          <p>
+            {formatSecondsToTime(audioStore.currentTime)} /{' '}
+            {formatSecondsToTime(audioStore.duration)}
+          </p>
           <VolumeControl volume={volume} onVolumeChange={handleVolumeChange} />
         </Div>
       )}
@@ -208,4 +207,3 @@ const AudioPlayer: React.FC = observer(() => {
   )
 })
 
-export default AudioPlayer

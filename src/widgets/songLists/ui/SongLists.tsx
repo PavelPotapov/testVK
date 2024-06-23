@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react'
 import { observer } from 'mobx-react-lite'
-import { List, Cell, Tappable } from '@vkontakte/vkui'
-import audioStore from '@/app/store/AudioStore'
+import { List } from '@vkontakte/vkui'
 import { Song } from '@/shared/types/song'
 import { TrackItem } from '@/entities/TrackItem'
+import audioStore from '@/app/store/AudioStore'
 import styles from './SongLists.module.scss'
 
-const SongList: React.FC = observer(() => {
+export const SongList: React.FC = observer(() => {
   useEffect(() => {
     const intervalId = setInterval(() => {
       audioStore.updateTime()
@@ -40,5 +40,3 @@ const SongList: React.FC = observer(() => {
     </div>
   )
 })
-
-export default SongList
