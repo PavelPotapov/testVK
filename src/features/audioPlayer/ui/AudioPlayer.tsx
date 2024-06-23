@@ -215,6 +215,62 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = observer(props => {
     }
   }
 
+  // Автоматическое переключение трека
+  // handleAudioEnded можно было бы прокидывать эту функцию пропсом и кастомизировать действия, логику переключения, либо в сторе это делать, но у меня нет столько времени)
+  useEffect(() => {
+    const handleAudioEnded = () => {
+      // Ищем индекс текущей песни в массиве
+      const currentIndex = audioStore.songs.findIndex(
+        song => song.id === audioStore.currentSong?.id
+      )
+
+      // Переменные для хранения следующей песни и ее canvas
+      let nextIdSongWillPlay: string | null = null
+      let nextSongCanvas: HTMLCanvasElement | null = null
+
+      if (currentIndex !== -1) {
+        // Если текущая песня найдена в массиве
+        const nextIndex = currentIndex + 1
+
+        if (nextIndex >= audioStore.songs.length) {
+          // Если следующий индекс выходит за пределы массива, начинаем с первой песни
+          nextIdSongWillPlay = audioStore.songs[0].id
+        } else {
+          // Иначе берем следующую песню из массива
+          nextIdSongWillPlay = audioStore.songs[nextIndex].id
+        }
+      }
+
+      if (nextIdSongWillPlay) {
+        // Находим следующую песню по ее ID
+        const nextSong = audioStore.songs.find(song => song.id === nextIdSongWillPlay)
+
+        if (nextSong) {
+          // Находим canvas для следующей песни по data-js атрибуту
+          // Самое быстро решение, которое пришло в голову, по хорошему эту переработать.
+          // Можно было бы и ref прокидывать, но больше кода
+          const canvasSelector = `[data-js-canvas-id="${nextSong.id}"]`
+          nextSongCanvas = document.querySelector(canvasSelector)
+
+          if (nextSongCanvas) {
+            audioStore.setCanvas(nextSongCanvas)
+            audioStore.selectSong(nextSong)
+          }
+        }
+      }
+    }
+
+    if (audioRef.current) {
+      audioRef.current.addEventListener('ended', handleAudioEnded)
+    }
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.removeEventListener('ended', handleAudioEnded)
+      }
+    }
+  }, [audioRef.current])
+
   return (
     <div>
       <audio ref={audioRef} />

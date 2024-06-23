@@ -86,6 +86,7 @@ export const TrackItem: React.FC<TrackItemProps> = observer(
             width={16}
             height={15}
             className={styles.TrackItemCanvas}
+            data-js-canvas-id={track.id}
           ></canvas>
           <Div className={styles.TrackItem}>
             <Div className={styles.TrackItemImageContainer}>
