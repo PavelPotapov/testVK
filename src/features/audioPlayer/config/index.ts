@@ -1,0 +1,1 @@
+export { defaultProps } from './defaultProps'

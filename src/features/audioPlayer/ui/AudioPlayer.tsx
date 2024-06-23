@@ -1,12 +1,27 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { observer } from 'mobx-react-lite'
-import { Slider, Div } from '@vkontakte/vkui' // Подставьте корректные импорты из вашего UI-фреймворка
+import { Slider, Div, ScreenSpinner } from '@vkontakte/vkui' // Подставьте корректные импорты из вашего UI-фреймворка
 import { roundRect } from '../lib/canvas'
 import { VolumeControl } from '@/shared/ui/volumeControl'
 import audioStore from '@/app/store/AudioStore'
 import { formatSecondsToTime } from '@/shared/lib'
+import { defaultProps } from '../config'
 
-export const AudioPlayer: React.FC = observer(() => {
+type PowerOfTwo = 32 | 64 | 128 | 256 | 512 | 1024 | 2048 | 4096 | 8192 | 16384 | 32768
+
+interface AudioPlayerProps {
+  fftSize?: PowerOfTwo
+  gapBars?: number
+  countBars?: number
+  borderRadiusBars?: number
+  backgroundColorBars?: string
+}
+
+export const AudioPlayer: React.FC<AudioPlayerProps> = observer(props => {
+  const { fftSize, gapBars, countBars, borderRadiusBars, backgroundColorBars } = {
+    ...defaultProps,
+    ...props
+  }
   const [volume, setVolume] = useState(100)
   const [isDragging, setIsDragging] = useState(false)
   const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null)
@@ -72,7 +87,7 @@ export const AudioPlayer: React.FC = observer(() => {
           audioContextRef.current = new AudioContext()
           sourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current)
           analyserRef.current = audioContextRef.current.createAnalyser()
-          analyserRef.current.fftSize = 512
+          analyserRef.current.fftSize = fftSize
           sourceRef.current.connect(analyserRef.current)
           analyserRef.current.connect(audioContextRef.current.destination)
           const canvas = canvasRef.current
@@ -84,9 +99,9 @@ export const AudioPlayer: React.FC = observer(() => {
             const bufferLength = analyserRef.current.frequencyBinCount
             const dataArray = new Uint8Array(bufferLength)
 
-            const gap = 2 // Отступ между столбиками
-            const barWidth = (WIDTH - gap * 4) / 5 // Ширина каждого столбца с учетом отступов
-            const borderRadius = 10 // Радиус скругления углов
+            const gap = gapBars // Отступ между столбиками
+            const barWidth = (WIDTH - gap * 4) / countBars // Ширина каждого столбца с учетом отступов
+            const borderRadius = borderRadiusBars // Радиус скругления углов
 
             const draw = () => {
               if (audioStore.isPlaying) {
@@ -100,9 +115,9 @@ export const AudioPlayer: React.FC = observer(() => {
 
                 const barHeightScale = HEIGHT / 255 // Масштаб высоты столбиков по максимальному значению
 
-                for (let i = 0; i < 5; i++) {
-                  const startIndex = Math.floor((bufferLength / 5) * i)
-                  const endIndex = Math.floor((bufferLength / 5) * (i + 1))
+                for (let i = 0; i < countBars; i++) {
+                  const startIndex = Math.floor((bufferLength / countBars) * i)
+                  const endIndex = Math.floor((bufferLength / countBars) * (i + 1))
 
                   // Находим среднее значение амплитуды в каждой группе
                   let sum = 0
@@ -113,7 +128,7 @@ export const AudioPlayer: React.FC = observer(() => {
                   const barHeight = average * barHeightScale // Нормализуем высоту столбика
 
                   // Рисуем скругленный столбик
-                  canvasCtxRef.current!.fillStyle = `rgb(255, 255, 255)`
+                  canvasCtxRef.current!.fillStyle = backgroundColorBars
                   roundRect(
                     canvasCtxRef.current!,
                     i * (barWidth + gap) + gap / 2, // x1
@@ -188,6 +203,18 @@ export const AudioPlayer: React.FC = observer(() => {
     }
   }
 
+  const handleVolumeChangeMobile = (event: React.TouchEvent) => {
+    const touch = event.touches[0]
+    if (touch) {
+      const rect = event.currentTarget.getBoundingClientRect()
+      const offsetX = touch.clientX - rect.left
+      const percentage = Math.min(Math.max(offsetX / rect.width, 0), 1)
+      const newVolume = percentage * 100
+
+      handleVolumeChange(newVolume)
+    }
+  }
+
   return (
     <div>
       <audio ref={audioRef} />
@@ -200,16 +227,20 @@ export const AudioPlayer: React.FC = observer(() => {
             onChange={handleSliderChange}
             onDragStart={handleSliderDragStart}
             onDragEnd={handleSliderDragEnd}
-            style={{ width: '100%' }}
           />
           <p>
             {formatSecondsToTime(audioStore.currentTime)} /{' '}
             {formatSecondsToTime(audioStore.duration)}
           </p>
-          <VolumeControl volume={volume} onVolumeChange={handleVolumeChange} />
+          <VolumeControl
+            volume={volume}
+            onVolumeChange={handleVolumeChange}
+            onTouchMove={handleVolumeChangeMobile}
+            onTouchEnd={handleVolumeChangeMobile}
+          />
         </Div>
       )}
-      {audioStore.isLoading && <p>Loading...</p>}
+      {audioStore.isLoading && <ScreenSpinner state="loading">Загрузка</ScreenSpinner>}
     </div>
   )
 })

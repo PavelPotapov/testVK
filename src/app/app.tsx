@@ -25,7 +25,7 @@ export const App = () => {
               <PanelHeader>VKUI</PanelHeader>
               <Div className="mainContainer">
                 <SongList />
-                <AudioPlayer />
+                <AudioPlayer fftSize={32} />
               </Div>
             </Panel>
           </View>

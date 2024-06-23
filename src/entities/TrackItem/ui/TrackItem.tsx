@@ -28,6 +28,22 @@ export const TrackItem: React.FC<TrackItemProps> = observer(
       setIsHovered(false)
     }
 
+    const handleTouchStart = () => {
+      setIsHovered(true)
+    }
+
+    const handleTouchEnd = () => {
+      setIsHovered(false)
+    }
+
+    const handlePointerEnter = () => {
+      setIsHovered(true)
+    }
+
+    const handlePointerLeave = () => {
+      setIsHovered(false)
+    }
+
     const handleSongClick = () => {
       if (canvasRef.current) onTrackClick(track, canvasRef.current)
     }
@@ -40,31 +56,46 @@ export const TrackItem: React.FC<TrackItemProps> = observer(
       e.stopPropagation()
     }
 
+    const handleCardClick = () => {
+      setIsHovered(false)
+      handleSongClick()
+    }
+
+    const handleMenuClick = (e: React.MouseEvent<HTMLElement>) => {
+      e.stopPropagation()
+    }
+
     const cardMode = isCurrent ? 'shadow' : 'outline-tint'
+    const stylesOverlay = isHovered ? styles.TrackItemOverlay : styles.TrackItemOverlayTransparent
 
     return (
-      <Tappable onClick={handleSongClick}>
+      <Tappable onClick={handleCardClick}>
         <Card
           mode={cardMode}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onPointerEnter={handlePointerEnter}
+          onPointerLeave={handlePointerLeave}
           style={{ position: 'relative', overflow: 'hidden' }}
+          className="isMaxHeight58"
         >
           <canvas
             ref={canvasRef}
             width={16}
-            height={16}
+            height={15}
             className={styles.TrackItemCanvas}
           ></canvas>
           <Div className={styles.TrackItem}>
-            <Div className={styles.imageContainer}>
+            <Div className={styles.TrackItemImageContainer}>
               {track.pictures.coverPicture ? (
                 <Image
                   size={40}
                   loading="lazy"
                   src={track.pictures.coverPicture}
                   alt={track.album.coverAlbum}
-                  srcSet={`${track.pictures.coverPicture} 1x ${track.pictures.coverPicture2x && ',' + track.pictures.coverPicture2x + '2x'}`}
+                  srcSet={`${track.pictures.coverPicture} 1x${track.pictures.coverPicture2x && ', ' + track.pictures.coverPicture2x + ' 2x'}`}
                   className={styles.TrackItemImg}
                 />
               ) : (
@@ -73,7 +104,7 @@ export const TrackItem: React.FC<TrackItemProps> = observer(
                 </Div>
               )}
 
-              <Div className={isCurrent ? styles.imageOverlay : ''}></Div>
+              <Div className={isCurrent ? styles.TrackItemImageOverlay : ''}></Div>
               <Div className={styles.TrackItemPlayIcon}>
                 {isHovered && !isCurrent && <Icon24Play />}
                 {isHovered && isCurrent && !audioStore.isPlaying && <Icon24Play />}
@@ -89,7 +120,9 @@ export const TrackItem: React.FC<TrackItemProps> = observer(
                     href={track.audio.audioDetailLink}
                     onClick={handleTitleAudioCLick}
                   >
-                    <Text weight="1">{track.audio.title}</Text>
+                    <Text weight="1" className={styles.TrackItemTitleTrackText}>
+                      {track.audio.title}
+                    </Text>
                   </Link>
                 </Div>
               ) : (
@@ -113,21 +146,15 @@ export const TrackItem: React.FC<TrackItemProps> = observer(
                   ? formatSecondsToTime(currentTime)
                   : formatSecondsToTime(track.audio.duration)}
               </Text>
-              <div>
-                <IconButton onClick={e => e.stopPropagation()}>
+              <Div className={styles.TrackItemIconButton}>
+                <IconButton onClick={handleMenuClick} style={{ maxHeight: '40px' }}>
                   <VisuallyHidden>Меню</VisuallyHidden>
-                  <Icon16MoreVertical />
+                  <Icon16MoreVertical style={{ paddingInline: '6px', paddingBlock: '4px' }} />
                 </IconButton>
-              </div>
+              </Div>
             </Div>
           </Div>
-
-          <div
-            className={styles.TrackItemOverlay}
-            style={{
-              backgroundColor: isHovered ? 'rgba(0, 0, 0, 0.1)' : 'transparent'
-            }}
-          />
+          <div className={stylesOverlay} />
         </Card>
       </Tappable>
     )

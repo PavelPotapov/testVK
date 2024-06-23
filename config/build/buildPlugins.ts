@@ -5,7 +5,31 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import ESLintPlugin from 'eslint-webpack-plugin'
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
-import ReactRefreshWebpackPlugin from "@pmmmwh/react-refresh-webpack-plugin"
+import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin'
+import CopyWebpackPlugin from 'copy-webpack-plugin'
+import path from 'path'
+import fs from 'fs'
+
+// Получаем путь к корню проекта
+const projectRoot = path.resolve(__dirname, '../../')
+const folders = ['fonts', 'images', 'songs', 'audio']
+
+const copyFolders = (folders: string[]) => {
+  return folders.map(folder => {
+    const fromPath = path.join(projectRoot, 'src/assets', folder)
+    const toPath = path.join(projectRoot, 'build', folder)
+
+    if (!fs.existsSync(fromPath)) {
+      console.warn(`Source folder "${fromPath}" does not exist.`)
+    }
+
+    return {
+      from: fromPath,
+      to: toPath,
+      noErrorOnMissing: true
+    }
+  })
+}
 
 export function buildPlugins({
   mode,
@@ -23,7 +47,9 @@ export function buildPlugins({
       __PLATFORM__: JSON.stringify(platform),
       __MODE__: JSON.stringify(mode)
     }),
-
+    new CopyWebpackPlugin({
+      patterns: [...copyFolders(folders)]
+    }),
     new ESLintPlugin()
   ]
 
@@ -31,7 +57,6 @@ export function buildPlugins({
     plugins.push(new webpack.ProgressPlugin())
     plugins.push(new ForkTsCheckerWebpackPlugin()) //параллельный анализ TS, чтобы не тормозил сборку
     plugins.push(new ReactRefreshWebpackPlugin())
-    
   }
 
   if (isProd) {

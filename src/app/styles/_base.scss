@@ -1,8 +1,12 @@
 :global(.mainContainer) {
-  width: clamp(360px, 35vw, 800px);
+  width: clamp(323px, 80vw, 1000px);
   margin: 0 auto;
 }
 
 :global(.isHiddenVkUiSliderThumb .vkuiSliderThumb) {
   display: none;
+}
+
+:global(html) {
+  scrollbar-gutter: stable;
 }

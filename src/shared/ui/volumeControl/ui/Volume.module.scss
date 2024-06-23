@@ -1,8 +1,9 @@
 @import '@/app/styles/mixin.scss';
 
 .VolumeControl {
+  --VolumeControlMaxWidth: 200px;
   @include resetPaddingForDivVkUI;
-  width: 200px;
+  width: var(--VolumeControlMaxWidth);
   display: flex;
   align-items: center;
 }

@@ -3,14 +3,19 @@
 .TrackItem {
   --vkui--size_base_padding_vertical--regular: 9px;
   --vkui--size_base_padding_horizontal--regular: 16px;
-  --TrackItemSingerTitleMr: 13px;
+  --TrackItemMaxHeight: 58px;
+  --TrackItemSingerTitleFontSize: 13px;
+  --TrackItemImgMr: 12px;
+  --TrackItemSingerTitleWeight: 400;
   --TrackItemOverlayImageColor: rgba(0, 0, 0, 0.6);
   --TrackItemOverlay: rgba(0, 0, 0, 0.1);
+  --TrackItemRightSlotGap: 8px;
+  --TrackItemImgBr: 8px;
+  --TrackItemArtistFontSize: 14px;
+  --TrackItemImageContainerMinWidth: 52px;
+  --TrackItemRightSlotContainerMinWidth: 54px;
   display: flex;
-}
-
-.TrackItemIsCurrent {
-  background-color: red;
+  align-items: center;
 }
 
 .TrackItemCardContainer {
@@ -18,22 +23,19 @@
   position: relative;
 }
 
-.TrackItemIsPlaying {
-  background-color: #ebecf0;
-}
-
 .TrackItemRightSlotContainer {
   @include resetPaddingForDivVkUI;
-  @include lineclamp(1);
   display: flex;
   margin-left: auto;
   align-items: center;
-  gap: 2px;
+  gap: var(--TrackItemRightSlotGap);
+  min-width: var(--TrackItemRightSlotContainerMinWidth);
 }
 
-.TrackItemOverlay {
+.TrackItemOverlay,
+.TrackItemOverlayTransparent {
   transition: background-color 0.3s ease;
-  pointer-events: none; // Чтобы не мешал обработке кликов на Card
+  pointer-events: none;
   position: absolute;
   top: 0;
   left: 0;
@@ -42,14 +44,22 @@
   z-index: 0;
 }
 
-.imageOverlay {
+.TrackItemOverlay {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.TrackItemOverlayTransparent {
+  background-color: transparent;
+}
+
+.TrackItemImageOverlay {
   position: absolute;
   top: 0;
   left: 0;
-  width: calc(100% - var(--TrackItemSingerTitleMr));
+  width: calc(100% - var(--TrackItemImgMr));
   height: 100%;
   border-radius: 4px;
-  background: var(--TrackItemOverlayImageColor, rgba(0, 0, 0, 0.6)); /* Цвет затемнения */
+  background: var(--TrackItemOverlayImageColor, rgba(0, 0, 0, 0.6));
   pointer-events: none;
 }
 
@@ -63,11 +73,11 @@
   z-index: 2;
 }
 
-.imageContainer {
+.TrackItemImageContainer {
   @include resetPaddingForDivVkUI;
   position: relative;
   max-height: 40px;
-  min-width: 53px;
+  min-width: var(--TrackItemImageContainerMinWidth);
 }
 
 .TrackItemNoteIconContainer {
@@ -85,31 +95,41 @@
   width: 100%;
   height: 100%;
   max-width: 100%;
-  margin-right: 13px;
-  border-radius: 8px;
+  margin-right: var(--TrackItemImgMr);
+  border-radius: var(--TrackItemImgBr);
   object-fit: cover;
 }
 
 .TrackItemCanvas {
   position: absolute;
-  top: 21px;
+  top: 22px;
   left: 28px;
   z-index: 2;
 }
 
 .TrackItemTime {
   --vkui--font_text--font_size--compact: 13px;
+  --vkui--font_text--line_height--compact: 16px;
+  --vkui--font_text--font_family--regular: var(--fontRoboto);
+  letter-spacing: 0.2px;
   color: var(--colorSecondary);
+  text-align: right;
 }
 
 .TrackItemInfoAboutTrack {
   @include resetPaddingForDivVkUI;
   flex-grow: 1;
   margin-right: 12px;
+  max-width: calc(
+    100% - var(--TrackItemRightSlotContainerMinWidth) - var(--TrackItemImageContainerMinWidth) -
+      16px
+  );
 }
 
-.TrackItemTitleTrackContainer {
+.TrackItemTitleTrackContainer,
+.TrackItemSingerTitleContainer {
   width: fit-content;
+  max-width: 100%;
 }
 
 .TrackItemTitleTrack {
@@ -117,39 +137,40 @@
   --vkui--font_weight_accent1: 400;
   --vkui--font_text--font_size--compact: 16px;
   --vkui--color_text_link: var(--vkui--color_text_primary_invariably);
-  line-height: 20px;
+  --vkui--font_text--line_height--compact: 20px;
   letter-spacing: 0.15px;
   text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block !important;
+}
+
+.TrackItemTitleTrackText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .TrackItemSingerTitleLink {
   --vkui--color_text_link: var(--colorSecondary);
 }
 
-.TrackItemSingerTitleContainer {
-  width: min-content;
-}
-
 .TrackItemSingerTitle {
   --vkui--font_text--font_family--regular: var(--fontRoboto);
+  --vkui--font_text--font_size--compact: var(--TrackItemSingerTitleFontSize);
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: var(--TrackItemSingerTitleMr);
-  font-weight: 400;
+  font-size: var(--TrackItemSingerTitleFontSize);
+  font-weight: var(--TrackItemSingerTitleWeight);
   line-height: 16px;
   letter-spacing: 0.2px;
   text-align: left;
   color: var(--colorSecondary);
 }
 
-.TrackItemArtist {
-  font-size: 14px;
-  color: #666;
-}
-
-.TrackItemDuration {
-  font-size: 14px;
-  color: #888;
+.TrackItemIconButton {
+  color: var(--vkui--color_background_accent);
 }

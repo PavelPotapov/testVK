@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx'
-import { Song } from '@/shared/types/song'
+import type { Song } from '@/shared/types/song'
 import { getSongs } from '@/shared/api'
 
 /**
