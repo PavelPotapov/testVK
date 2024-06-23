@@ -1,4 +1,4 @@
-import { Song } from '@/shared/types/song'
+import type { Song } from '@/shared/types/song'
 import { API_ENDPOINTS } from '../config/constants'
 
 export async function getSongs(): Promise<Song[]> {

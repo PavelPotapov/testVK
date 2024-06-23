@@ -122,7 +122,7 @@
   margin-right: 12px;
   max-width: calc(
     100% - var(--TrackItemRightSlotContainerMinWidth) - var(--TrackItemImageContainerMinWidth) -
-      16px
+      17px
   );
 }
 
@@ -159,13 +159,13 @@
 .TrackItemSingerTitle {
   --vkui--font_text--font_family--regular: var(--fontRoboto);
   --vkui--font_text--font_size--compact: var(--TrackItemSingerTitleFontSize);
+  --vkui--font_text--line_height--compact: 16px;
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: var(--TrackItemSingerTitleFontSize);
   font-weight: var(--TrackItemSingerTitleWeight);
-  line-height: 16px;
   letter-spacing: 0.2px;
   text-align: left;
   color: var(--colorSecondary);

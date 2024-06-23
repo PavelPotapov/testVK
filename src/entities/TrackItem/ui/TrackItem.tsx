@@ -3,8 +3,8 @@ import { observer } from 'mobx-react-lite'
 import { Card, Div, Text, Tappable, Image, Link, IconButton, VisuallyHidden } from '@vkontakte/vkui'
 import { Song } from '@/shared/types/song' // Импорт типа трека из общих типов
 import { formatSecondsToTime } from '@/shared/lib'
-import styles from './TrackItem.module.scss'
 import { Icon16MoreVertical, Icon24Play, Icon24Pause } from '@vkontakte/icons'
+import styles from './TrackItem.module.scss'
 import audioStore from '@/app/store/AudioStore'
 import NoteIcon from '@/assets/images/icons/note.svg'
 
@@ -86,7 +86,7 @@ export const TrackItem: React.FC<TrackItemProps> = observer(
             width={16}
             height={15}
             className={styles.TrackItemCanvas}
-            data-js-canvas-id={track.id}
+            data-js-canvas-id={track.id} //id canvas для отрисовки, нужен для AudioPlayer
           ></canvas>
           <Div className={styles.TrackItem}>
             <Div className={styles.TrackItemImageContainer}>
