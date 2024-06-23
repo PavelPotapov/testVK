@@ -18,8 +18,11 @@ export const AudioPlayer: React.FC = observer(() => {
   const animationFrameRef = useRef<number | null>(null)
 
   useEffect(() => {
+    // Создание нового аудиоэлемента и установка обработчика событий
     audioRef.current = new Audio()
     audioRef.current.addEventListener('loadedmetadata', setupVisualizer)
+
+    // Установка аудиоэлемента в хранилище MobX
     if (audioRef.current) {
       audioStore.setAudio(audioRef.current)
     }
@@ -29,13 +32,14 @@ export const AudioPlayer: React.FC = observer(() => {
     }
   }, [])
 
-  //Смена трека
+  // Изменение трека при изменении ссылки на аудиофайл в хранилище
   useEffect(() => {
     if (audioRef.current && audioStore.audioFileLink) {
       changeAudioSource(audioStore.audioFileLink)
     }
   }, [audioStore.audioFileLink])
 
+  // Очистка состояний и объектов AudioContext при размонтировании компонента
   const cleanupAudioContext = () => {
     if (audioContextRef.current) {
       audioContextRef.current.close().catch(error => {
@@ -49,6 +53,7 @@ export const AudioPlayer: React.FC = observer(() => {
     }
   }
 
+  // Очистка холста
   const clearCanvas = () => {
     const canvasCtx = canvasCtxRef.current
     if (canvasCtx) {
@@ -57,9 +62,11 @@ export const AudioPlayer: React.FC = observer(() => {
     }
   }
 
+  // Настройка визуализации аудиосигнала на холсте
   const setupVisualizer = () => {
     try {
       if (audioRef.current && audioStore.canvas) {
+        // Получение ссылки на элемент canvas из хранилища и создание AudioContext
         canvasRef.current = audioStore.canvas
         if (!audioContextRef.current) {
           audioContextRef.current = new AudioContext()
@@ -206,4 +213,3 @@ export const AudioPlayer: React.FC = observer(() => {
     </div>
   )
 })
-
