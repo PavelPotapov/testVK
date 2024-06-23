@@ -3,7 +3,7 @@ import type { Song } from '@/shared/types/song'
 import { getSongs } from '@/shared/api'
 
 /**
- * Класс для управления аудио-плеером и песнями.
+ * Класс для управления аудио-плеером и песнями. SingleTon
  */
 class AudioStore {
   audio: HTMLAudioElement | null = null // Аудио элемент плеера
@@ -65,7 +65,7 @@ class AudioStore {
    */
   setAudio(audioElement: HTMLAudioElement): void {
     this.audio = audioElement
-    this._bindEvents()
+    // this._bindEvents()
   }
 
   /**
@@ -104,10 +104,12 @@ class AudioStore {
    * @param {Song} song - Выбранная песня для воспроизведения.
    */
   selectSong(song: Song): void {
+    this._unbindEvents()
     this.setSongDetails(song)
     if (this.audio) {
       this.audio.currentTime = 0
       this.audio.src = this.audioFileLink
+      this._bindEvents()
     }
     this.isPlaying = true
   }
@@ -161,6 +163,16 @@ class AudioStore {
    */
   isCurrentSong(song: Song): boolean {
     return this.currentSong?.id === song.id
+  }
+
+  /**
+   * Приватный метод для отписки от событий аудио элемента.
+   * Удаляет обработчики событий timeupdate и loadedmetadata.
+   */
+  private _unbindEvents(): void {
+    if (!this.audio) return
+    this.audio.removeEventListener('timeupdate', this.updateTime)
+    this.audio.removeEventListener('loadedmetadata', this.updateDuration)
   }
 
   /**
